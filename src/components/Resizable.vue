@@ -4,7 +4,7 @@
         height: enable ? height + 'px' : 'auto',
     }">
         <slot></slot>
-        <div v-if="enable" class="resize-handle" @mousedown.stop="startResize"></div>
+        <div v-if="enable" class="resize-handle" @mousedown.stop="startResize">◈</div>
     </div>
 </template>
 <script setup lang="ts">
@@ -104,7 +104,6 @@ watch(resizing, (newResizing) => {
     height: 10px;
     bottom: 0;
     right: 0;
-    background: transparent;
     cursor: se-resize;
 }
 </style>

@@ -8,9 +8,11 @@ button {
     width: 20px;
     height: 20px;
     background-color: transparent;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.2s ease-out;
+    margin: 0 5px;
 }
 
 button:hover {

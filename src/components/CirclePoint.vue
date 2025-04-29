@@ -15,6 +15,7 @@ defineProps({ normal: Boolean });
     transform: scale(1);
     display: inline-block;
     margin: 0 2px;
+    cursor: crosshair;
 }
 
 .point.normal {

@@ -31,5 +31,6 @@ defineProps({
     transform: translateY(-100%);
     display: flex;
     align-items: center;
+    margin-top: -5px;
 }
 </style>

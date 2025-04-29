@@ -5,7 +5,7 @@
             <SquareButton class="searcher" @click.stop="searching = !searching">🔍</SquareButton>
             <input v-if="searching" @click.stop type="text" v-model="filter" placeholder="Search..." />
         </span>
-        <div :class="{ options: true, opening }">
+        <div class="options" :class="{ opening }">
             <div v-for="option, index in options">
                 <div class="option" v-if="valid(option)" @click="select(index)">
                     <span v-if="index === selected">▸</span>
@@ -13,11 +13,14 @@
                     <span v-if="index === selected">◂</span>
                 </div>
             </div>
+            <div>
+                <div class="option" v-if="options.length < 1" @click="msg('error', '无法选中此选项')">{{ noOptionTip }}</div>
+            </div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
-import { computed, ref, watch, type PropType } from 'vue';
+import { computed, onMounted, ref, watch, type PropType } from 'vue';
 import SquareButton from './SquareButton.vue';
 import AnimatedContent from './AnimatedContent.vue';
 const emit = defineEmits(["update:selected"]);
@@ -31,11 +34,13 @@ const props = defineProps({
         default: 0
     }
 });
+const noOptionTip = "⚠️No Options";
 const selected = ref(props.selected);
-const selectedText = computed(() => props.options[selected.value]);
+const selectedText = computed(() => props.options[selected.value] ?? noOptionTip);
 const opening = ref(false);
 const filter = ref('');
 const searching = ref(false);
+const { msg } = window;
 function select(index: number) {
     selected.value = index;
     opening.value = false;
@@ -46,10 +51,12 @@ function valid(text: string) {
 watch(() => props.selected, (newValue) => {
     selected.value = newValue;
 });
-watch(selected, (newValue,oldValue) => {
+watch(selected, (newValue, oldValue) => {
     if (newValue === oldValue) return;
-    console.log("Selected changed:", newValue);
     emit('update:selected', newValue);
+});
+onMounted(() => {
+    emit('update:selected', selected.value);
 });
 </script>
 <style scoped>
