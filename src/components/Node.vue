@@ -11,6 +11,7 @@ import SquareButton from './SquareButton.vue';
 import { createObjectURL } from '@/tools';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
+import Resizable from './Resizable.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -92,10 +93,12 @@ window.addEventListener("mouseup", endConnect);
                         </SmallButton>
                     </template>
                     <template #content>
-                        <img v-if="myAsset?.type === 'image'" class="media-preview"
-                            :src="createObjectURL(myAsset.data)">
-                        <video controls v-if="myAsset?.type === 'video'" class="media-preview"
-                            :src="createObjectURL(myAsset.data)"></video>
+                        <Resizable>
+                            <img v-if="myAsset?.type === 'image'" class="media-preview"
+                                :src="createObjectURL(myAsset.data)">
+                            <video controls v-if="myAsset?.type === 'video'" class="media-preview"
+                                :src="createObjectURL(myAsset.data)"></video>
+                        </Resizable>
                     </template>
                 </Deskable>
             </div>
@@ -190,6 +193,7 @@ window.addEventListener("mouseup", endConnect);
 
 .media-preview {
     width: 100%;
+    height: 100%;
 }
 
 .tip {

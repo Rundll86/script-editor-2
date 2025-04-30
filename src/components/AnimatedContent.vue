@@ -43,6 +43,7 @@ watch(() => props.content, (newValue) => {
     text-wrap: nowrap;
     left: 0;
     top: 0;
+    pointer-events: none;
 }
 
 .part.hide {

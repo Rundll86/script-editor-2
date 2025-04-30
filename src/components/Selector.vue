@@ -5,24 +5,33 @@
             <SquareButton class="searcher" @click.stop="searching = !searching">🔍</SquareButton>
             <input v-if="searching" @click.stop type="text" v-model="filter" placeholder="Search..." />
         </span>
-        <div class="options" :class="{ opening }">
-            <div v-for="option, index in options">
-                <div class="option" v-if="valid(option)" @click="select(index)">
-                    <span v-if="index === selected">▸</span>
-                    {{ option }}
-                    <span v-if="index === selected">◂</span>
+        <div ref="optionsbar" class="options"></div>
+        <Teleport to="body">
+            <div class="options teleportor" :class="{ opening }" :style="{
+                top: optionsbarRect?.top + 'px',
+                left: optionsbarRect?.left + 'px',
+                width: optionsbarRect?.width + 'px'
+            }">
+                <div v-for="option, index in options">
+                    <div class="option" v-if="valid(option)" @click="select(index)">
+                        <span v-if="index === selected">▸</span>
+                        {{ option }}
+                        <span v-if="index === selected">◂</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="option" v-if="options.length < 1" @click="msg('error', '无法选中此选项')">{{ noOptionTip }}
+                    </div>
                 </div>
             </div>
-            <div>
-                <div class="option" v-if="options.length < 1" @click="msg('error', '无法选中此选项')">{{ noOptionTip }}</div>
-            </div>
-        </div>
+        </Teleport>
     </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, type PropType } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch, type PropType } from 'vue';
 import SquareButton from './SquareButton.vue';
 import AnimatedContent from './AnimatedContent.vue';
+import { everyFrame, frame } from '@/tools';
 const emit = defineEmits(["update:selected"]);
 const props = defineProps({
     options: {
@@ -40,7 +49,10 @@ const selectedText = computed(() => props.options[selected.value] ?? noOptionTip
 const opening = ref(false);
 const filter = ref('');
 const searching = ref(false);
+const optionsbar = ref<HTMLDivElement | null>(null);
+const optionsbarRect = ref<DOMRect | undefined>(undefined);
 const { msg } = window;
+let rafStoper: (() => void) | null = null;
 function select(index: number) {
     selected.value = index;
     opening.value = false;
@@ -55,8 +67,15 @@ watch(selected, (newValue, oldValue) => {
     if (newValue === oldValue) return;
     emit('update:selected', newValue);
 });
+everyFrame((stop) => {
+    rafStoper = stop;
+    optionsbarRect.value = optionsbar.value?.getBoundingClientRect();
+});
 onMounted(() => {
     emit('update:selected', selected.value);
+});
+onUnmounted(() => {
+    rafStoper?.call(null);
 });
 </script>
 <style scoped>
@@ -95,8 +114,7 @@ onMounted(() => {
     left: 0;
     top: 100%;
     width: 100%;
-    height: 0;
-    transition: all 0.2s ease-out;
+    transition: height 0.2s ease-out, opacity 0.2s ease-out, transform 0.2s ease-out;
     interpolate-size: allow-keywords;
     opacity: 0;
     overflow: hidden;
@@ -105,8 +123,8 @@ onMounted(() => {
     transform-origin: 50% 0;
     border-radius: 5px;
     overflow: hidden;
-    margin-top: 5px;
-    z-index: 10;
+    margin-top: 2px;
+    text-align: center;
 }
 
 .options.opening {
@@ -132,5 +150,9 @@ onMounted(() => {
 
 .searcher {
     margin-left: auto;
+}
+
+.teleportor {
+    position: absolute;
 }
 </style>

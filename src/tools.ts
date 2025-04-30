@@ -106,13 +106,27 @@ export function keyMapper(keys: string[], values: string[]) {
     return result;
 };
 export function unused<T>(data: T): T { return data; };
-export function everyFrame(executor: () => void) {
+export function everyFrame(executor: (stop: () => void) => void) {
     function loop() {
-        executor();
+        let keep = true;
+        executor(() => keep = false);
+        if (!keep) return;
         requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
 };
+export async function frame(count: number = 1) {
+    return new Promise<void>((resolve) => {
+        let framed = 0;
+        everyFrame(() => {
+            framed++;
+            if (framed === count) {
+                stop();
+                resolve();
+            }
+        });
+    });
+}
 export function elementCenter(element: HTMLElement) {
     const rect = element.getBoundingClientRect();
     return new Vector(rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -237,8 +251,35 @@ export async function uploadFile(accept: string = "*") {
         input.click();
     });
 }
+export function downloadFile(data: any, filename: string) {
+    const blob = new Blob([data]);
+    const url = createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
 export function createObjectURL(data: any) {
     const blob = new Blob([data]);
     return URL.createObjectURL(blob);
+}
+export function arrayBufferToBase64(buffer: ArrayBuffer) {
+    const uint8Array = new Uint8Array(buffer);
+    let binaryString = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+        binaryString += String.fromCharCode(uint8Array[i]);
+    }
+    return btoa(binaryString);
+}
+export function base64ToArrayBuffer(base64: string) {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const buffer = new ArrayBuffer(len);
+    const uint8Array = new Uint8Array(buffer);
+    for (let i = 0; i < len; i++) {
+        uint8Array[i] = binaryString.charCodeAt(i);
+    }
+    return buffer;
 }
 export const unknownImageURL = createObjectURL(unknownImage);

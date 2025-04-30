@@ -1,4 +1,4 @@
-export type WindowType = "node" | "world" | "asset" | "project";
+export type WindowType = "node" | "world" | "asset" | "project" | "variable" | "about";
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"] as const;
 export type NodeType = typeof nodeTypes[number];
@@ -40,6 +40,17 @@ export interface Character {
     feelings: Record<number, number>;
     selectingFeeling: number;
 }
+export type VariableType = "string" | "number" | "boolean";
+export interface VariableTypeMap {
+    string: string;
+    number: number;
+    boolean: boolean;
+}
+export interface Variable<T extends VariableType = VariableType> {
+    name: string;
+    type: T;
+    value: VariableTypeMap[T];
+}
 export interface ProjectData {
     name: string;
     nodes: NodeScript[];
@@ -48,6 +59,7 @@ export interface ProjectData {
     nouns: Noun[];
     assets: Asset[];
     scripts: string[];
+    variables: Variable[];
 }
 export type MessageType = "info" | "warn" | "error";
 export interface Message {

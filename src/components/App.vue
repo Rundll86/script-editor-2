@@ -28,7 +28,7 @@
                     <template #afterTitle>
                         <SquareButton @click="project.characters.push({
                             name: 'Unnamed Character',
-                            feelings: feelingsObject,
+                            feelings: feelingsObject(),
                             selectingFeeling: 0,
                         })">+</SquareButton>
                     </template>
@@ -44,7 +44,7 @@
                                 <Selector :options="project.feelings" v-model:selected="character.selectingFeeling" />
                                 资源：
                                 <Selector :options="project.assets.map(asset => asset.name)"
-                                    v-model="character.feelings[character.selectingFeeling]" />
+                                    v-model:selected="character.feelings[character.selectingFeeling]" />
                             </template>
                         </Deskable>
                     </OptionLabel>
@@ -125,6 +125,38 @@
                     <span v-if="scripts.length === 0">没有定义任何脚本！</span>
                 </OptionList>
             </Window>
+            <Window title="变量" v-model:state="windowState.variable">
+            </Window>
+            <Window title="关于" v-model:state="windowState.about">
+                <div class="centerbox">
+                    ScriptEditor是一个基于界面的RPG/AVG游戏剧本设计器。<br>
+                    <div class="inline-right margin5">
+                        技术栈<br>
+                        开源许可<br>
+                        仓库
+                    </div>
+                    <div class="inline-left margin5">
+                        <b>Vue3+Webpack</b><br>
+                        <b>MIT</b><br>
+                        <a href="https://github.com/Rundll86/script-editor-2" target="_blank">Github</a>
+                    </div><br>
+                    <span class="thanks">特别鸣谢</span><br>
+                    <Member name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
+                    <Member name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
+                    <Member with-border name="TangDo158" alias="唐豆"
+                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                    <Member name="Tin-Dunwi" alias="冬薇"
+                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                    <Member name="Cyberexplorer" alias="赛博猫猫"
+                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                </div>
+            </Window>
+            <Window title="项目" v-model:state="windowState.project">
+                项目名称：
+                <input type="text" v-model="project.name"><br>
+                <WideButton @click="saveProject">保存</WideButton>
+                <WideButton @click="loadProject">加载</WideButton>
+            </Window>
         </Layer>
         <div v-for="message, index in editorState.messages" class="message" :class="{
             info: message.type === 'info',
@@ -138,7 +170,7 @@
 <script setup lang="ts">
 import { Vector, nodeTypes, nodeTypeNames, type EditorState, type NodeScript, type NodeType, type ProjectData, type WindowType, type MessageType } from '@/structs';
 import { computed, onMounted, ref } from 'vue';
-import { Drawing, elementCenter, everyFrame, uuid } from '@/tools';
+import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
 import Node from './Node.vue';
@@ -153,6 +185,7 @@ import SquareButton from './SquareButton.vue';
 import AssetBar from './AssetBar.vue';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
+import Member from './Member.vue';
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -164,12 +197,12 @@ onMounted(() => {
             node.outPoints.forEach(point => {
                 if (point.outElement) {
                     if (point.followingCursor) {
-                        Drawing.bezierConnect(
+                        Drawing.straightConnect(
                             elementCenter(point.outElement),
                             mouse,
                         );
                     } else if (point.inElement) {
-                        Drawing.bezierConnectElement(
+                        Drawing.straightConnectElement(
                             point.outElement,
                             point.inElement,
                         );
@@ -185,6 +218,8 @@ const windowState = ref<Record<WindowType, boolean>>({
     world: false,
     asset: false,
     project: false,
+    variable: false,
+    about: false
 });
 const editorState = ref<EditorState>({
     selectedNodeType: 0,
@@ -217,6 +252,7 @@ const project = ref<ProjectData>({
     ],
     assets: [],
     scripts: [],
+    variables: []
 });
 const images = computed(() => {
     return project.value.assets.filter(e => e.type === 'image');
@@ -227,12 +263,12 @@ const videos = computed(() => {
 const scripts = computed(() => {
     return project.value.assets.filter(e => e.type === 'script');
 });
-const feelingsObject = computed(() => {
+const feelingsObject = () => {
     return project.value.feelings.reduce((data, _, i) => {
         data[i] = 0;
         return data;
     }, {} as Record<number, 0>);
-});
+};
 const mouse: Vector = Vector.ZERO;
 window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
@@ -240,7 +276,7 @@ window.addEventListener("mousemove", (e) => {
 });
 project.value.characters.push({
     name: "CharacterA",
-    feelings: feelingsObject.value,
+    feelings: feelingsObject(),
     selectingFeeling: 0
 });
 function openWindow(type: WindowType) {
@@ -268,6 +304,32 @@ function deleteSelfMessage(index: number) {
 };
 function showMessage(type: MessageType, data: string) {
     editorState.value.messages.push({ type, data });
+};
+async function saveData() {
+    const sanitizedProject = JSON.parse(JSON.stringify(project.value, (key, value) => {
+        if (["inElement", "outElement", "followingCursor", "selectingFeeling"].includes(key)) {
+            return undefined;
+        } else if (value instanceof ArrayBuffer) {
+            const b64 = arrayBufferToBase64(value);
+            console.log(b64);
+            return b64;
+        }
+        return value;
+    }));
+    return await new Blob([btoa(encodeURIComponent(JSON.stringify(sanitizedProject)))]).arrayBuffer();
+};
+async function saveProject() {
+    downloadFile(await saveData(), `${project.value.name}.ssp`);
+};
+async function loadProject() {
+    const file = await uploadFile("*.ssp") ?? undefined;
+    const data: ProjectData = JSON.parse(decodeURIComponent(atob(new TextDecoder().decode(file))));
+    data.assets.forEach(asset => {
+        if (asset.data && typeof asset.data === "string") {
+            asset.data = base64ToArrayBuffer(asset.data);
+        }
+    });
+    project.value = data;
 };
 Object.defineProperty(window, "msg", { value: showMessage });
 Object.defineProperty(window, "project", { value: project });
@@ -384,5 +446,29 @@ textarea:focus {
 
 .message.error {
     background-color: red;
+}
+
+.centerbox {
+    text-align: center;
+}
+
+.inline-left {
+    text-align: left;
+    display: inline-block;
+}
+
+.inline-right {
+    text-align: right;
+    display: inline-block;
+}
+
+.margin5 {
+    margin: 5px;
+}
+
+.thanks {
+    font-size: 18px;
+    margin-top: 10px;
+    display: inline-block;
 }
 </style>
