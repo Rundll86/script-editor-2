@@ -14,7 +14,7 @@ defineProps({
 <style scoped>
 button {
     background-color: transparent;
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     padding: 5px 10px;

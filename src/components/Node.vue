@@ -149,7 +149,7 @@ window.addEventListener("mouseup", endConnect);
 }
 
 .node * {
-    text-wrap: nowrap;
+    text-wrap-mode: nowrap;
 }
 
 .node-part {

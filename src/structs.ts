@@ -2,8 +2,8 @@ export type WindowType = "node" | "world" | "asset" | "project" | "variable" | "
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"] as const;
 export type NodeType = typeof nodeTypes[number];
-export class Vector {
-    constructor(public x: number, public y: number) { }
+export class Vector<X extends number = number, Y extends number = number> {
+    constructor(public x: X, public y: Y) { }
     static get ZERO() {
         return new Vector(0, 0);
     }
@@ -60,6 +60,8 @@ export interface ProjectData {
     assets: Asset[];
     scripts: string[];
     variables: Variable[];
+    saveEditorState: boolean;
+    editor?: EditorState;
 }
 export type MessageType = "info" | "warn" | "error";
 export interface Message {
@@ -69,4 +71,5 @@ export interface Message {
 export interface EditorState {
     selectedNodeType: number;
     messages: Message[];
+    workspace: Vector;
 }

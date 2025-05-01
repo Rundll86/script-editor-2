@@ -40,7 +40,7 @@ watch(() => props.content, (newValue) => {
     transition: all 0.3s ease-in-out;
     opacity: 1;
     transform: translateY(0);
-    text-wrap: nowrap;
+    text-wrap-mode: nowrap;
     left: 0;
     top: 0;
     pointer-events: none;

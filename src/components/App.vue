@@ -3,7 +3,7 @@
         connecting: project.nodes.some(node => node.outPoints.some(point => point.followingCursor))
     }">
         <Layer :priority="-1">
-            <Draggable region-style="grab">
+            <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
                 <Node v-for="node in project.nodes" :data="node" :project="project" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
@@ -136,9 +136,11 @@
                         仓库
                     </div>
                     <div class="inline-left margin5">
-                        <b>Vue3+Webpack</b><br>
+                        <b>Vue+Vite</b><br>
                         <b>MIT</b><br>
-                        <a href="https://github.com/Rundll86/script-editor-2" target="_blank">Github</a>
+                        <a href="https://github.com/Rundll86/script-editor-2" target="_blank">
+                            <b>Github</b>
+                        </a>
                     </div><br>
                     <span class="thanks">特别鸣谢</span><br>
                     <Member name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
@@ -154,8 +156,10 @@
             <Window title="项目" v-model:state="windowState.project">
                 项目名称：
                 <input type="text" v-model="project.name"><br>
-                <WideButton @click="saveProject">保存</WideButton>
-                <WideButton @click="loadProject">加载</WideButton>
+                储存编辑器数据？
+                <Checkbox v-model="project.saveEditorState" />
+                <WideButton superwide @click="saveProject">保存</WideButton><br>
+                <WideButton superwide @click="loadProject">加载</WideButton>
             </Window>
         </Layer>
         <div v-for="message, index in editorState.messages" class="message" :class="{
@@ -186,6 +190,7 @@ import AssetBar from './AssetBar.vue';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Member from './Member.vue';
+import Checkbox from './CheckBox.vue';
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -197,12 +202,12 @@ onMounted(() => {
             node.outPoints.forEach(point => {
                 if (point.outElement) {
                     if (point.followingCursor) {
-                        Drawing.straightConnect(
+                        Drawing.bezierConnect(
                             elementCenter(point.outElement),
                             mouse,
                         );
                     } else if (point.inElement) {
-                        Drawing.straightConnectElement(
+                        Drawing.bezierConnectElement(
                             point.outElement,
                             point.inElement,
                         );
@@ -223,13 +228,14 @@ const windowState = ref<Record<WindowType, boolean>>({
 });
 const editorState = ref<EditorState>({
     selectedNodeType: 0,
-    messages: []
+    messages: [],
+    workspace: Vector.ZERO
 });
 const project = ref<ProjectData>({
     name: "Unnamed Project",
     nodes: [],
     characters: [],
-    feelings: ["开心", "难过", "生气", "无感"],
+    feelings: ["😑无感", "😭难过", "😡生气", "😃开心", "🤔疑惑"],
     nouns: [
         {
             refer: "orange",
@@ -252,7 +258,8 @@ const project = ref<ProjectData>({
     ],
     assets: [],
     scripts: [],
-    variables: []
+    variables: [],
+    saveEditorState: false
 });
 const images = computed(() => {
     return project.value.assets.filter(e => e.type === 'image');
@@ -306,6 +313,11 @@ function showMessage(type: MessageType, data: string) {
     editorState.value.messages.push({ type, data });
 };
 async function saveData() {
+    if (project.value.saveEditorState) {
+        project.value.editor = editorState.value;
+    } else {
+        delete project.value.editor;
+    }
     const sanitizedProject = JSON.parse(JSON.stringify(project.value, (key, value) => {
         if (["inElement", "outElement", "followingCursor", "selectingFeeling"].includes(key)) {
             return undefined;
@@ -329,10 +341,13 @@ async function loadProject() {
             asset.data = base64ToArrayBuffer(asset.data);
         }
     });
+    if (data.saveEditorState && data.editor) {
+        editorState.value = data.editor;
+    }
     project.value = data;
 };
-Object.defineProperty(window, "msg", { value: showMessage });
-Object.defineProperty(window, "project", { value: project });
+window.msg = showMessage;
+window.project = project.value;
 </script>
 <style>
 * {
@@ -342,6 +357,7 @@ Object.defineProperty(window, "project", { value: project });
     border: none;
     outline: none;
     transition: none;
+    font-family: '微软雅黑';
 }
 
 body {
@@ -358,6 +374,10 @@ body {
 
 .script-editor.connecting {
     cursor: crosshair !important;
+}
+
+textarea {
+    text-wrap-mode: wrap !important;
 }
 
 input,
@@ -470,5 +490,21 @@ textarea:focus {
     font-size: 18px;
     margin-top: 10px;
     display: inline-block;
+}
+
+a:link,
+a:visited {
+    color: black;
+    text-decoration: none;
+}
+
+a:hover {
+    color: gray;
+    text-decoration: none;
+}
+
+a:active {
+    color: gray;
+    text-decoration: underline;
 }
 </style>
