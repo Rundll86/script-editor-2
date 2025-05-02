@@ -1,9 +1,9 @@
 export type WindowType = "node" | "world" | "asset" | "project" | "variable" | "about";
-export const nodeTypes = ["talk", "select", "media", "script"] as const;
-export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"] as const;
+export const nodeTypes = ["talk", "select", "media", "script", "logic"] as const;
+export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本", "逻辑分支"];
 export type NodeType = typeof nodeTypes[number];
-export class Vector<X extends number = number, Y extends number = number> {
-    constructor(public x: X, public y: Y) { }
+export class Vector {
+    constructor(public x: number, public y: number) { }
     static get ZERO() {
         return new Vector(0, 0);
     }
@@ -15,11 +15,23 @@ export interface OutPoint {
     label: string;
     followingCursor: boolean;
 }
+export interface LogicPart {
+    useVariable: boolean;
+    data: string | number;
+}
+export const logicTypes = ["<", "=", ">", "(regexp)="];
+export const logicTypeNames = ["小于", "等于", "大于", "正则匹配"];
+export type LogicType = typeof logicTypes[number];
+export interface LogicBranch {
+    type: number;
+    args: LogicPart[];
+}
 export interface NodeScript {
     id: string;
     position: Vector;
     outPoints: OutPoint[];
     type: NodeType;
+    branches: LogicBranch[];
     talker?: number;
     message?: string;
     feeling?: number;
@@ -40,16 +52,13 @@ export interface Character {
     feelings: Record<number, number>;
     selectingFeeling: number;
 }
-export type VariableType = "string" | "number" | "boolean";
-export interface VariableTypeMap {
-    string: string;
-    number: number;
-    boolean: boolean;
-}
-export interface Variable<T extends VariableType = VariableType> {
+export const variableTypes = ["string", "number", "boolean"] as const;
+export const variableTypeNames = ["文本", "数字", "开关"];
+export type VariableType = typeof variableTypes[number];
+export interface Variable {
     name: string;
-    type: T;
-    value: VariableTypeMap[T];
+    type: number;
+    value: string;
 }
 export interface ProjectData {
     name: string;
@@ -72,4 +81,6 @@ export interface EditorState {
     selectedNodeType: number;
     messages: Message[];
     workspace: Vector;
+    varName: string;
+    varType: number;
 }

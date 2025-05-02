@@ -84,11 +84,7 @@
             <Window title="资源管理" v-model:state="windowState.asset">
                 <OptionList title="图像">
                     <template #afterTitle>
-                        <SquareButton @click="project.assets.push({
-                            name: 'Unnamed Image',
-                            type: 'image',
-                            data: null
-                        })">+</SquareButton>
+                        <SquareButton @click="createImage">+</SquareButton>
                     </template>
                     <OptionLabel v-for="image, index in images" :key="index">
                         <AssetBar v-model:data="images[index]"
@@ -98,11 +94,7 @@
                 </OptionList>
                 <OptionList title="视频">
                     <template #afterTitle>
-                        <SquareButton @click="project.assets.push({
-                            name: 'Unnamed Video',
-                            type: 'video',
-                            data: null
-                        })">+</SquareButton>
+                        <SquareButton @click="createVideo">+</SquareButton>
                     </template>
                     <OptionLabel v-for="video, index in videos" :key="index">
                         <AssetBar v-model:data="videos[index]"
@@ -126,6 +118,29 @@
                 </OptionList>
             </Window>
             <Window title="变量" v-model:state="windowState.variable">
+                <Frame title="创建变量" class="centerbox">
+                    变量名：
+                    <input type="text" v-model="editorState.varName" placeholder="Variable...."><br>
+                    数据类型▹
+                    <Selector class="margin5" :options="variableTypeNames" v-model:selected="editorState.varType" /><br>
+                    <WideButton @click="createVariable">确定</WideButton>
+                </Frame>
+                <OptionList title="变量列表">
+                    <OptionLabel v-for="vari in project.variables">
+                        <input type="text" v-model="vari.name">
+                        ▸
+                        <Selector :options="variableTypeNames" v-model:selected="vari.type" />
+                        <Deskable>
+                            <template #toggler="props">
+                                <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
+                            </template>
+                            <template #content>
+                                初始值：
+                                <input type="text" v-model="vari.value">
+                            </template>
+                        </Deskable>
+                    </OptionLabel>
+                </OptionList>
             </Window>
             <Window title="关于" v-model:state="windowState.about">
                 <div class="centerbox">
@@ -172,7 +187,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { Vector, nodeTypes, nodeTypeNames, type EditorState, type NodeScript, type NodeType, type ProjectData, type WindowType, type MessageType } from '@/structs';
+import { Vector, nodeTypes, nodeTypeNames, type EditorState, type NodeScript, type NodeType, type ProjectData, type WindowType, type MessageType, variableTypeNames } from '@/structs';
 import { computed, onMounted, ref } from 'vue';
 import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
@@ -229,7 +244,9 @@ const windowState = ref<Record<WindowType, boolean>>({
 const editorState = ref<EditorState>({
     selectedNodeType: 0,
     messages: [],
-    workspace: Vector.ZERO
+    workspace: Vector.ZERO,
+    varName: "",
+    varType: 0
 });
 const project = ref<ProjectData>({
     name: "Unnamed Project",
@@ -303,6 +320,7 @@ function createNode(type: NodeType) {
                 followingCursor: false
             }
         ],
+        branches: []
     };
     project.value.nodes.push(node);
 };
@@ -312,6 +330,34 @@ function deleteSelfMessage(index: number) {
 function showMessage(type: MessageType, data: string) {
     editorState.value.messages.push({ type, data });
 };
+async function createImage() {
+    const files = await uploadFile("image/*", false);
+    files.forEach(file => {
+        project.value.assets.push({
+            name: file.filename,
+            type: 'image',
+            data: file
+        });
+    });
+};
+async function createVideo() {
+    const files = await uploadFile("video/*", false);
+    files.forEach(file => {
+        project.value.assets.push({
+            name: file.filename,
+            type: 'video',
+            data: file
+        });
+    });
+};
+async function createVariable() {
+    project.value.variables.push({
+        name: editorState.value.varName,
+        type: editorState.value.varType,
+        value: ""
+    });
+    editorState.value.varName = "";
+}
 async function saveData() {
     if (project.value.saveEditorState) {
         project.value.editor = editorState.value;

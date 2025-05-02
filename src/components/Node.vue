@@ -12,6 +12,7 @@ import { createObjectURL } from '@/tools';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
+import CheckBox from './CheckBox.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -122,6 +123,25 @@ window.addEventListener("mouseup", endConnect);
                 <OptionLabel v-for="option, index in data.outPoints">
                     <input type="text" v-model="option.label">
                     <CirclePoint @mousedown.prevent="startConnect($event, index)" />
+                </OptionLabel>
+            </OptionList>
+            <OptionList class="options" v-if="data.type === 'logic'">
+                <template #afterTitle>
+                    <SquareButton @click="data.branches?.push({
+                        type: 0,
+                        args: []
+                    })">+</SquareButton>
+                </template>
+                <OptionLabel v-for="branch in data.branches">
+                    <div v-if="branch.type === 0 /*等于*/">
+                        <Selector :options="project.variables.map(vari => vari.name)"
+                            v-model:selected="(branch.args[0].data as number)" />
+                        等于
+                        <CheckBox v-model="branch.args[1].useVariable" />
+                        <Selector v-if="branch.args[1].useVariable" :options="project.variables.map(vari => vari.name)"
+                            v-model="branch.args[1].data" />
+                        <input type="text" v-else v-model="branch.args[1].data">
+                    </div>
                 </OptionLabel>
             </OptionList>
             <br>&nbsp;

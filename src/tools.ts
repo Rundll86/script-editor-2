@@ -228,25 +228,41 @@ export namespace Drawing {
         context.closePath();
     };
 };
-export async function uploadFile(accept: string = "*") {
-    return new Promise<ArrayBuffer | null>((resolve) => {
+type ArrayBufferWithFilename = ArrayBuffer & { filename: string };
+export async function readFile(file: File): Promise<ArrayBufferWithFilename> {
+    return new Promise<ArrayBufferWithFilename>((resolve) => {
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+            if (!(reader.result instanceof ArrayBuffer)) return;
+            const buffer = reader.result;
+            resolve(Object.assign(buffer, { filename: file.name }));
+        });
+        reader.readAsArrayBuffer(file);
+    });
+};
+export async function uploadFile(accept: string, one?: true): Promise<ArrayBufferWithFilename>;
+export async function uploadFile(accept: string, one?: false): Promise<ArrayBufferWithFilename[]>;
+export async function uploadFile(accept: string = "*", one: boolean = true): Promise<ArrayBufferWithFilename[] | ArrayBufferWithFilename> {
+    return new Promise((resolve) => {
         const input = document.createElement("input");
         input.type = "file";
         input.accept = accept;
-        input.addEventListener("change", (event) => {
-            const file = input.files?.[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = () => {
-                    resolve(reader.result as ArrayBuffer);
-                };
-                reader.onerror = () => {
-                    resolve(null);
-                };
-                reader.readAsArrayBuffer(file);
-            } else {
-                resolve(null);
-            };
+        input.multiple = !one;
+        input.addEventListener("change", async () => {
+            const files: File[] = [];
+            for (let file of input.files ?? []) {
+                files.push(file);
+            }
+            if (one) resolve(await readFile(files[0]));
+            else {
+                const result: ArrayBufferWithFilename[] = [];
+                files.forEach(async file => {
+                    result.push(await readFile(file));
+                    if (result.length === files.length) {
+                        resolve(result);
+                    }
+                });
+            }
         });
         input.click();
     });
