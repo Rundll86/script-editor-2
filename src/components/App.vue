@@ -171,10 +171,23 @@
             <Window title="项目" v-model:state="windowState.project">
                 项目名称：
                 <input type="text" v-model="project.name"><br>
-                储存编辑器数据？
+                储存编辑器状态？
                 <Checkbox v-model="project.saveEditorState" />
                 <WideButton superwide @click="saveProject">保存</WideButton><br>
                 <WideButton superwide @click="loadProject">加载</WideButton>
+                <Frame title="编译菜单">
+                    包含完整数据？
+                    <Checkbox v-model="editorState.exporter.fullExporting" /><br>
+                    输出格式：
+                    <Selector :options="['二进制', 'JSON']" v-model:selected="editorState.exporter.outputFormat" /><br>
+                    是否加密？
+                    <Checkbox v-model="editorState.exporter.encryption" />
+                    <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
+                        v-model="editorState.exporter.password">
+                    <div class="centerbox">
+                        <WideButton @click="compile">开始编译</WideButton>
+                    </div>
+                </Frame>
             </Window>
         </Layer>
         <div v-for="message, index in editorState.messages" class="message" :class="{
@@ -188,7 +201,7 @@
 </template>
 <script setup lang="ts">
 import { Vector, nodeTypes, nodeTypeNames, type EditorState, type NodeScript, type NodeType, type ProjectData, type WindowType, type MessageType, variableTypeNames } from '@/structs';
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref } from 'vue';
 import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
@@ -206,6 +219,8 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
+import JSZip from 'jszip';
+import md5 from "md5";
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -246,7 +261,13 @@ const editorState = ref<EditorState>({
     messages: [],
     workspace: Vector.ZERO,
     varName: "",
-    varType: 0
+    varType: 0,
+    exporter: {
+        fullExporting: true,
+        outputFormat: 0,
+        encryption: false,
+        password: ""
+    }
 });
 const project = ref<ProjectData>({
     name: "Unnamed Project",
@@ -319,8 +340,7 @@ function createNode(type: NodeType) {
                 label: "defaultPoint",
                 followingCursor: false
             }
-        ],
-        branches: []
+        ]
     };
     project.value.nodes.push(node);
 };
@@ -391,9 +411,46 @@ async function loadProject() {
         editorState.value = data.editor;
     }
     project.value = data;
+    nextTick(() => {
+        project.value.nodes.forEach(node => node.outPoints.forEach((point, index) => {
+            point.outElement = document.querySelector(`[data-node="${node.id}"][data-point="${index}"]`);
+            point.inElement = document.querySelector(`[data-node="${point.nextId}"][data-point="in"]`);
+        }));
+    });
 };
+async function compile() {
+    const outputer = new JSZip();
+    const { value: projectData } = project;
+    projectData.nodes.forEach(node => {
+        let text = "";
+        text += node.type + "\n";
+        text += node.talker + "\n";
+        text += node.message + "\n";
+        text += node.feeling + "\n";
+        text += node.assetId + "\n";
+        text += node.outPoints.map(point => `${point.label}:${point.nextId}` as const).join(",") + "\n";
+        outputer.file(`${node.id}.node`, text);
+    });
+    projectData.characters.forEach((character, index) => {
+        let text = "";
+        text += character.name + "\n";
+        text += Object.keys(character.feelings).map(key => `${key}:${character.feelings[key]}`).join(",");
+        outputer.file(`${index}.character`, text);
+    });
+    projectData.feelings.forEach((feeling, index) => {
+        outputer.file(`${index}.feeling`, feeling);
+    });
+    projectData.assets.forEach((asset, index) => {
+        outputer.file(`${index}.${asset.type}`, asset.data ?? "");
+    });
+    projectData.nouns.forEach(noun => {
+        outputer.file(`${noun.refer}.noun`, noun.calls.join("\n"));
+    });
+    const buffer = await outputer.generateAsync({ type: "arraybuffer" });
+    downloadFile(buffer, `${projectData.name}.script`);
+}
 window.msg = showMessage;
-window.project = project.value;
+window.project = project;
 </script>
 <style>
 * {

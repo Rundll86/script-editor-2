@@ -12,7 +12,6 @@ import { createObjectURL } from '@/tools';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
-import CheckBox from './CheckBox.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -73,12 +72,12 @@ window.addEventListener("mouseup", endConnect);
 <template>
     <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node">
         <div class="titlebar" data-region="true">
-            <CirclePoint :data-node="data.id" />
+            <CirclePoint :data-node="data.id" data-point="in" />
             {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}
         </div>
         <div class="content">
             <CirclePoint normal v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
-                @mousedown.prevent="startConnect($event, index)" />
+                @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
             <div class="node-part" v-if="data.type === 'script'">
                 选择脚本：
                 <Selector :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
@@ -122,26 +121,7 @@ window.addEventListener("mouseup", endConnect);
                 </template>
                 <OptionLabel v-for="option, index in data.outPoints">
                     <input type="text" v-model="option.label">
-                    <CirclePoint @mousedown.prevent="startConnect($event, index)" />
-                </OptionLabel>
-            </OptionList>
-            <OptionList class="options" v-if="data.type === 'logic'">
-                <template #afterTitle>
-                    <SquareButton @click="data.branches?.push({
-                        type: 0,
-                        args: []
-                    })">+</SquareButton>
-                </template>
-                <OptionLabel v-for="branch in data.branches">
-                    <div v-if="branch.type === 0 /*等于*/">
-                        <Selector :options="project.variables.map(vari => vari.name)"
-                            v-model:selected="(branch.args[0].data as number)" />
-                        等于
-                        <CheckBox v-model="branch.args[1].useVariable" />
-                        <Selector v-if="branch.args[1].useVariable" :options="project.variables.map(vari => vari.name)"
-                            v-model="branch.args[1].data" />
-                        <input type="text" v-else v-model="branch.args[1].data">
-                    </div>
+                    <CirclePoint :data-node="data.id" :data-point="index" @mousedown.prevent="startConnect($event, index)" />
                 </OptionLabel>
             </OptionList>
             <br>&nbsp;

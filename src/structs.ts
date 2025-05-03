@@ -1,6 +1,6 @@
 export type WindowType = "node" | "world" | "asset" | "project" | "variable" | "about";
-export const nodeTypes = ["talk", "select", "media", "script", "logic"] as const;
-export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本", "逻辑分支"];
+export const nodeTypes = ["talk", "select", "media", "script"] as const;
+export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"];
 export type NodeType = typeof nodeTypes[number];
 export class Vector {
     constructor(public x: number, public y: number) { }
@@ -15,23 +15,11 @@ export interface OutPoint {
     label: string;
     followingCursor: boolean;
 }
-export interface LogicPart {
-    useVariable: boolean;
-    data: string | number;
-}
-export const logicTypes = ["<", "=", ">", "(regexp)="];
-export const logicTypeNames = ["小于", "等于", "大于", "正则匹配"];
-export type LogicType = typeof logicTypes[number];
-export interface LogicBranch {
-    type: number;
-    args: LogicPart[];
-}
 export interface NodeScript {
     id: string;
     position: Vector;
     outPoints: OutPoint[];
     type: NodeType;
-    branches: LogicBranch[];
     talker?: number;
     message?: string;
     feeling?: number;
@@ -49,7 +37,7 @@ export interface Asset {
 }
 export interface Character {
     name: string;
-    feelings: Record<number, number>;
+    feelings: Record<string, number>;
     selectingFeeling: number;
 }
 export const variableTypes = ["string", "number", "boolean"] as const;
@@ -83,4 +71,10 @@ export interface EditorState {
     workspace: Vector;
     varName: string;
     varType: number;
+    exporter: {
+        fullExporting: boolean;
+        outputFormat: number;
+        encryption: boolean;
+        password: string;
+    };
 }

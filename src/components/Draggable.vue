@@ -35,8 +35,8 @@ const props = defineProps({
     }
 });
 const emit = defineEmits(["update:x", "update:y", "update:dragging", "dragstart", "drag", "dragend"]);
-const x = ref(0);
-const y = ref(0);
+const x = ref(props.x);
+const y = ref(props.y);
 const dragging = ref(false);
 let mouseOffset: [number, number] = [0, 0];
 let mouse: [number, number] = [0, 0];
