@@ -1,10 +1,4 @@
-import pyzipper, hashlib, io
-
-
-def generate_sha256(data: bytes | str):
-    sha256_hasher = hashlib.sha256()
-    sha256_hasher.update(data if type(data) == bytes else data.encode("utf8"))
-    return sha256_hasher.hexdigest()
+import pyzipper, io
 
 
 class ScriptPlayer:
