@@ -185,7 +185,7 @@
                     <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
                         v-model="editorState.exporter.password">
                     <div class="centerbox">
-                        <WideButton @click="compile">开始编译</WideButton>
+                        <WideButton @click="downloadFile(compile(), `${project.name}.script`);">开始编译</WideButton>
                     </div>
                 </Frame>
             </Window>
@@ -200,7 +200,18 @@
     </div>
 </template>
 <script setup lang="ts">
-import { Vector, nodeTypes, nodeTypeNames, type EditorState, type NodeScript, type NodeType, type ProjectData, type WindowType, type MessageType, variableTypeNames } from '@/structs';
+import {
+    Vector,
+    nodeTypes,
+    nodeTypeNames,
+    type EditorState,
+    type NodeScript,
+    type NodeType,
+    type ProjectData,
+    type WindowType,
+    type MessageType,
+    variableTypeNames
+} from '@/structs';
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
@@ -219,8 +230,8 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
-import JSZip from 'jszip';
-import md5 from "md5";
+import * as ZipJS from "@zip.js/zip.js";
+import CryptoJS from "crypto-js";
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -389,7 +400,6 @@ async function saveData() {
             return undefined;
         } else if (value instanceof ArrayBuffer) {
             const b64 = arrayBufferToBase64(value);
-            console.log(b64);
             return b64;
         }
         return value;
@@ -419,7 +429,10 @@ async function loadProject() {
     });
 };
 async function compile() {
-    const outputer = new JSZip();
+    const outputer = new ZipJS.ZipWriter(
+        new ZipJS.BlobWriter("application/zip"),
+        editorState.value.exporter.encryption ? { password: editorState.value.exporter.password } : undefined
+    );
     const { value: projectData } = project;
     projectData.nodes.forEach(node => {
         let text = "";
@@ -429,25 +442,34 @@ async function compile() {
         text += node.feeling + "\n";
         text += node.assetId + "\n";
         text += node.outPoints.map(point => `${point.label}:${point.nextId}` as const).join(",") + "\n";
-        outputer.file(`${node.id}.node`, text);
+        outputer.add(`${node.id}.node`, new ZipJS.TextReader(text));
     });
     projectData.characters.forEach((character, index) => {
         let text = "";
         text += character.name + "\n";
         text += Object.keys(character.feelings).map(key => `${key}:${character.feelings[key]}`).join(",");
-        outputer.file(`${index}.character`, text);
+        outputer.add(`${index}.character`, new ZipJS.TextReader(text));
     });
     projectData.feelings.forEach((feeling, index) => {
-        outputer.file(`${index}.feeling`, feeling);
+        outputer.add(`${index}.feeling`, new ZipJS.TextReader(feeling));
     });
     projectData.assets.forEach((asset, index) => {
-        outputer.file(`${index}.${asset.type}`, asset.data ?? "");
+        if (asset.data instanceof ArrayBuffer && asset.type === "video" || asset.type === "image") {
+            outputer.add(`${index}.${asset.type}`, new ZipJS.BlobReader(new Blob([asset.data ?? new TextEncoder().encode("").buffer])));
+        } else if (asset.type === "script") {
+            console.log("..");
+            outputer.add(`${index}.${asset.type}`, new ZipJS.TextReader(asset.name));
+        } else {
+            window.msg("error", `Unknown asset type: ${asset.type}`);
+        }
     });
     projectData.nouns.forEach(noun => {
-        outputer.file(`${noun.refer}.noun`, noun.calls.join("\n"));
+        outputer.add(`${noun.refer}.noun`, new ZipJS.TextReader(noun.calls.join("\n")));
     });
-    const buffer = await outputer.generateAsync({ type: "arraybuffer" });
-    downloadFile(buffer, `${projectData.name}.script`);
+    if (editorState.value.exporter.encryption) outputer;
+    const buffer = await outputer.close();
+    const arrayBuffer = await buffer.arrayBuffer();
+    return arrayBuffer;
 }
 window.msg = showMessage;
 window.project = project;

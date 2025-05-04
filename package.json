@@ -12,10 +12,11 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@types/crypto-js": "^4.2.2",
+    "@zip.js/zip.js": "^2.7.60",
     "crypto-js": "^4.2.0",
     "jszip": "^3.10.1",
     "md5": "^2.3.0",
-    "tariff-njs": "^1.0.0",
     "vue": "^3.5.13"
   },
   "devDependencies": {

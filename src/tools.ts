@@ -267,8 +267,8 @@ export async function uploadFile(accept: string = "*", one: boolean = true): Pro
         input.click();
     });
 }
-export function downloadFile(data: any, filename: string) {
-    const blob = new Blob([data]);
+export async function downloadFile(data: any, filename: string) {
+    const blob = new Blob([await data]);
     const url = createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

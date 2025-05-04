@@ -30,10 +30,14 @@ export interface Noun {
     calls: string[];
 }
 export type AssetType = "image" | "video" | "script";
-export interface Asset {
+export interface Asset<T extends AssetType = AssetType> {
     name: string;
-    type: AssetType;
-    data: string | ArrayBuffer | null;
+    type: T;
+    data: {
+        image: ArrayBuffer;
+        video: ArrayBuffer;
+        script: string
+    }[T] | null;
 }
 export interface Character {
     name: string;
