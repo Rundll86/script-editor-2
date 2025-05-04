@@ -2,3 +2,5 @@ node_modules
 obj
 bin
 dist
+build
+*.egg-info

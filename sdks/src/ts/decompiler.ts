@@ -61,7 +61,7 @@ export class ScriptPlayer {
         const entries = await zipReader.getEntries();
         for (const entry of entries) {
             if (entry.directory || !entry.getData) continue;
-            const { buffer: content } = await entry.getData<Uint16Array<ArrayBuffer>>(new Uint8ArrayWriter());
+            const { buffer: content } = await entry.getData<Uint8Array>(new Uint8ArrayWriter()) as { buffer: ArrayBuffer };
             let decodedContent: string | ArrayBuffer;
             try {
                 decodedContent = content.toString();
