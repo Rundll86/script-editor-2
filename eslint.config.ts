@@ -17,4 +17,12 @@ export default defineConfigWithVueTs(
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,
+  {
+    rules: {
+      "vue/no-mutating-props": "off",
+      "vue/multi-word-component-names": "off",
+      "vue/no-use-v-if-with-v-for": "off",
+      "@typescript-eslint/no-namespace": "off"
+    }
+  }
 )

@@ -5,7 +5,7 @@
         <Layer :priority="-1">
             <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <Node v-for="node in project.nodes" :data="node" :project="project" />
+                <Node v-for="node, index in project.nodes" :key="index" :data="node" :project="project" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </Draggable>
         </Layer>
@@ -19,7 +19,7 @@
                 </Frame>
                 <Frame title="节点列表">
                     <div class="node-list">
-                        <span class="node-name" v-for="node in project.nodes">{{ node.id }}</span>
+                        <span class="node-name" :key="index" v-for="node, index in project.nodes">{{ node.id }}</span>
                     </div>
                 </Frame>
             </Window>
@@ -71,7 +71,7 @@
                             </template>
                             <template #content>
                                 <SmallButton @click="noun.calls.push('')">新建别名</SmallButton>
-                                <div v-for="_, index in noun.calls">
+                                <div :key="index" v-for="_, index in noun.calls">
                                     别名{{ index + 1 }}:
                                     <input type="text" v-model="noun.calls[index]" placeholder="别名..." />
                                     <SquareButton @click="noun.calls.splice(index, 1)">🗑️</SquareButton>
@@ -126,7 +126,7 @@
                     <WideButton @click="createVariable">确定</WideButton>
                 </Frame>
                 <OptionList title="变量列表">
-                    <OptionLabel v-for="vari in project.variables">
+                    <OptionLabel :key="index" v-for="vari,index in project.variables">
                         <input type="text" v-model="vari.name">
                         ▸
                         <Selector :options="variableTypeNames" v-model:selected="vari.type" />
@@ -190,7 +190,7 @@
                 </Frame>
             </Window>
         </Layer>
-        <div v-for="message, index in editorState.messages" class="message" :class="{
+        <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
             info: message.type === 'info',
             warn: message.type === 'warn',
             error: message.type === 'error'
@@ -466,7 +466,6 @@ async function compile() {
     projectData.nouns.forEach(noun => {
         outputer.add(`${noun.refer}.noun`, new ZipJS.TextReader(noun.calls.join("\n")));
     });
-    if (editorState.value.exporter.encryption) outputer;
     const buffer = await outputer.close();
     const arrayBuffer = await buffer.arrayBuffer();
     return arrayBuffer;

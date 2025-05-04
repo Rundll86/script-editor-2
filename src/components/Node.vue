@@ -13,7 +13,6 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
 import Frame from './Frame.vue';
-import FitValueInput from './FitValueInput.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -109,7 +108,7 @@ window.addEventListener("mouseup", endConnect);
             <Frame title="节点">
                 <SmallButton @click="project.entryNode = data.id">设为入口节点</SmallButton>
             </Frame>
-            <CirclePoint normal v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
+            <CirclePoint normal :key="index" v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
                 @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
             <div class="node-part" v-if="data.type === 'script'">
                 选择脚本：
@@ -149,7 +148,7 @@ window.addEventListener("mouseup", endConnect);
                 <textarea v-model="data.message"></textarea>
                 <Frame title="专有名词" v-if="nouns.length > 0">
                     <Frame title="预览">{{ previewText }}</Frame>
-                    <div v-for="noun in nouns">
+                    <div :key="index" v-for="noun, index in nouns">
                         {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：{{ noun.callName }}
                     </div>
                 </Frame>
@@ -158,7 +157,7 @@ window.addEventListener("mouseup", endConnect);
                 <template #afterTitle>
                     <SquareButton @click="createOutPoint">+</SquareButton>
                 </template>
-                <OptionLabel v-for="option, index in data.outPoints">
+                <OptionLabel :key="index" v-for="option, index in data.outPoints">
                     <input type="text" v-model="option.label">
                     <CirclePoint :data-node="data.id" :data-point="index"
                         @mousedown.prevent="startConnect($event, index)" />

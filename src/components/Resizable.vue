@@ -46,9 +46,9 @@ const props = defineProps({
 const emit = defineEmits(["update:width", "update:height", "update:resizing", "resizestart", "resize", "resizeend"]);
 const width = ref(props.width);
 const height = ref(props.height);
-const resizing = ref(false);
-let mouseOffset: [number, number] = [0, 0];
-let mouse: [number, number] = [0, 0];
+const isResizing = ref(false);
+const mouseOffset: [number, number] = [0, 0];
+const mouse: [number, number] = [0, 0];
 window.addEventListener("mousemove", e => {
     mouse[0] = e.clientX;
     mouse[1] = e.clientY;
@@ -60,13 +60,13 @@ function limited(min: number, value: number, max: number) {
 };
 function startResize(e: TargetAndVector) {
     e.preventDefault();
-    resizing.value = true;
+    isResizing.value = true;
     mouseOffset[0] = e.clientX - width.value;
     mouseOffset[1] = e.clientY - height.value;
     emit("resizestart", mouseOffset);
 };
 function updateResize(e: TargetAndVector) {
-    if (!resizing.value) return;
+    if (!isResizing.value) return;
     let newWidth = width.value + e.movementX;
     let newHeight = height.value + e.movementY;
     newWidth = limited(props.minSize.width, newWidth, props.maxSize.width);
@@ -76,8 +76,8 @@ function updateResize(e: TargetAndVector) {
     emit("resize", [newWidth, newHeight]);
 };
 function endResize() {
-    if (!resizing.value) return;
-    resizing.value = false;
+    if (!isResizing.value) return;
+    isResizing.value = false;
     emit("resizeend");
 };
 watch([() => props.width, () => props.height], ([newWidth, newHeight]) => {
@@ -88,7 +88,7 @@ watch([width, height], ([newWidth, newHeight]) => {
     if (newWidth !== props.width) emit("update:width", newWidth);
     if (newHeight !== props.height) emit("update:height", newHeight);
 });
-watch(resizing, (newResizing) => {
+watch(isResizing, (newResizing) => {
     emit("update:resizing", newResizing);
 });
 </script>

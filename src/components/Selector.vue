@@ -12,7 +12,7 @@
                 left: optionsbarRect?.left + 'px',
                 width: optionsbarRect?.width + 'px'
             }">
-                <div v-for="option, index in options">
+                <div :key="index" v-for="option, index in options">
                     <div class="option" v-if="valid(option)" @click="select(index)">
                         <span v-if="index === selected">▸</span>
                         {{ option }}
@@ -31,7 +31,7 @@
 import { computed, onMounted, onUnmounted, ref, watch, type PropType } from 'vue';
 import SquareButton from './SquareButton.vue';
 import AnimatedContent from './AnimatedContent.vue';
-import { everyFrame, frame } from '@/tools';
+import { everyFrame } from '@/tools';
 const emit = defineEmits(["update:selected"]);
 const props = defineProps({
     options: {

@@ -5,14 +5,14 @@ export function uuid() {
     let result;
     do {
         result = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
         });
     } while (uuidGenerated.includes(result));
     uuidGenerated.push(result);
     return result;
 };
-export function declareGlobalVaribles(obj: { [key: string]: any }) {
+export function declareGlobalVaribles<T>(obj: Record<string, T>) {
     Object.keys(obj).forEach((key) => {
         Object.defineProperty(window, key, {
             value: obj[key]
@@ -98,8 +98,8 @@ export function flatArray<T>(data: RecursionArray<T>): T[] {
     if (!Array.isArray(data)) return [data];
     return data.map(e => flatArray(e as RecursionArray<T>)).flat() as T[];
 };
-export function keyMapper(keys: string[], values: string[]) {
-    const result: any = {};
+export function keyMapper<K extends string[], V extends string[]>(keys: K, values: V) {
+    const result: Record<string, V[number]> = {};
     keys.forEach((key, index) => {
         result[key] = values[index];
     });
@@ -240,8 +240,8 @@ export async function readFile(file: File): Promise<ArrayBufferWithFilename> {
         reader.readAsArrayBuffer(file);
     });
 };
-export async function uploadFile(accept: string, one?: true): Promise<ArrayBufferWithFilename>;
-export async function uploadFile(accept: string, one?: false): Promise<ArrayBufferWithFilename[]>;
+export async function uploadFile(accept?: string, one?: true): Promise<ArrayBufferWithFilename>;
+export async function uploadFile(accept?: string, one?: false): Promise<ArrayBufferWithFilename[]>;
 export async function uploadFile(accept: string = "*", one: boolean = true): Promise<ArrayBufferWithFilename[] | ArrayBufferWithFilename> {
     return new Promise((resolve) => {
         const input = document.createElement("input");
@@ -250,7 +250,7 @@ export async function uploadFile(accept: string = "*", one: boolean = true): Pro
         input.multiple = !one;
         input.addEventListener("change", async () => {
             const files: File[] = [];
-            for (let file of input.files ?? []) {
+            for (const file of input.files ?? []) {
                 files.push(file);
             }
             if (one) resolve(await readFile(files[0]));
@@ -267,16 +267,17 @@ export async function uploadFile(accept: string = "*", one: boolean = true): Pro
         input.click();
     });
 }
-export async function downloadFile(data: any, filename: string) {
+export async function downloadFile(data: Promise<string | ArrayBuffer> | string | ArrayBuffer, filename: string) {
     const blob = new Blob([await data]);
-    const url = createObjectURL(blob);
+    const url = createObjectURL(await blob.arrayBuffer());
     const a = document.createElement("a");
     a.href = url;
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
 }
-export function createObjectURL(data: any) {
+export function createObjectURL(data: string | ArrayBuffer | null) {
+    if (!data) return "";
     const blob = new Blob([data]);
     return URL.createObjectURL(blob);
 }

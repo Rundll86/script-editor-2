@@ -37,9 +37,9 @@ const props = defineProps({
 const emit = defineEmits(["update:x", "update:y", "update:dragging", "dragstart", "drag", "dragend"]);
 const x = ref(props.x);
 const y = ref(props.y);
-const dragging = ref(false);
-let mouseOffset: [number, number] = [0, 0];
-let mouse: [number, number] = [0, 0];
+const isDragging = ref(false);
+const mouseOffset: [number, number] = [0, 0];
+const mouse: [number, number] = [0, 0];
 window.addEventListener("mousemove", e => {
     mouse[0] = e.clientX;
     mouse[1] = e.clientY;
@@ -57,20 +57,20 @@ function startDrag(e: TargetAndVector) {
     if (!isElementInRegion(e.target)) return;
     e.preventDefault();
     e.stopPropagation();
-    dragging.value = true;
+    isDragging.value = true;
     mouseOffset[0] = e.clientX - x.value;
     mouseOffset[1] = e.clientY - y.value;
     emit("dragstart", mouseOffset);
 };
 function updateDrag(e: TargetAndVector) {
-    if (!dragging.value) return;
+    if (!isDragging.value) return;
     x.value = e.clientX - mouseOffset[0];
     y.value = e.clientY - mouseOffset[1];
     emit("drag", [x, y]);
 };
 function endDrag() {
-    if (!dragging.value) return;
-    dragging.value = false;
+    if (!isDragging.value) return;
+    isDragging.value = false;
     emit("dragend");
 };
 watch([() => props.x, () => props.y], ([newX, newY]) => {
@@ -81,7 +81,7 @@ watch([x, y], ([newX, newY]) => {
     if (newX !== props.x) emit("update:x", newX);
     if (newY !== props.y) emit("update:y", newY);
 });
-watch(dragging, (newDragging) => {
+watch(isDragging, (newDragging) => {
     emit("update:dragging", newDragging);
 });
 </script>
