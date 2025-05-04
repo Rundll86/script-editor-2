@@ -231,7 +231,6 @@ import SmallButton from './SmallButton.vue';
 import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
 import * as ZipJS from "@zip.js/zip.js";
-import CryptoJS from "crypto-js";
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -284,7 +283,7 @@ const project = ref<ProjectData>({
     name: "Unnamed Project",
     nodes: [],
     characters: [],
-    feelings: ["😑无感", "😭难过", "😡生气", "😃开心", "🤔疑惑"],
+    feelings: ["😑平静", "😃开心", "😡生气", "😭难过", "😱害怕", "😍喜爱", "🤮厌恶", "🤑恳求"],
     nouns: [
         {
             refer: "orange",

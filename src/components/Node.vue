@@ -12,6 +12,7 @@ import { createObjectURL } from '@/tools';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
+import Frame from './Frame.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -32,6 +33,34 @@ const avatarData = computed(() => {
 });
 const myAsset: ComputedRef<Asset | undefined> = computed(() => {
     return project.assets[data.assetId ?? 0];
+});
+const nounMatcher = /(\$|\[)\w+[:.]\s*\d+\s*(;|\])/g;
+const unknownNounTip = "▸未知，请在「世界观」选项卡设置◂";
+const nouns: ComputedRef<{
+    refer: string;
+    callIndex: number;
+    callName: string
+}[]> = computed(() => {
+    const matches = [...data.message?.match(nounMatcher) ?? []];
+    return matches.map(match => {
+        const data = match.slice(1, -1).split(/[:.]/);
+        const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
+        return {
+            refer,
+            callIndex: index,
+            callName: project.nouns.find(
+                nounSrc => nounSrc.refer === refer
+            )?.calls[index] ?? unknownNounTip
+        };
+    }).filter(item => project.nouns.some(nounSrc => nounSrc.refer === item.refer));
+});
+const previewText = computed(() => {
+    return data.message?.replace(nounMatcher, match => {
+        const data = match.slice(1, -1).split(/[:.]/);
+        const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
+        if (!project.nouns.some(nounSrc => nounSrc.refer === refer)) return match;
+        return project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls[index] ?? unknownNounTip;
+    }) ?? "";
 });
 function createOutPoint() {
     data.outPoints.push({
@@ -103,9 +132,9 @@ window.addEventListener("mouseup", endConnect);
                 </Deskable>
             </div>
             <div class="node-part" v-if="data.type === 'talk' || data.type === 'select'">
-                说话者：
+                角色：
                 <Selector :options="project.characters.map(char => char.name)" v-model:selected="data.talker" />
-                说话者的情绪：
+                当前情绪：
                 <Selector :options="project.feelings" v-model:selected="data.feeling" />
                 <div class="previewer">
                     <span v-if="avatarData">头像预览<br></span>
@@ -114,6 +143,12 @@ window.addEventListener("mouseup", endConnect);
                 </div>
                 内容：
                 <textarea v-model="data.message"></textarea>
+                <Frame title="专有名词" v-if="nouns.length > 0">
+                    <Frame title="预览">{{ previewText }}</Frame>
+                    <div v-for="noun in nouns">
+                        {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：{{ noun.callName }}
+                    </div>
+                </Frame>
             </div>
             <OptionList class="options" v-if="data.type === 'select'">
                 <template #afterTitle>
@@ -121,7 +156,8 @@ window.addEventListener("mouseup", endConnect);
                 </template>
                 <OptionLabel v-for="option, index in data.outPoints">
                     <input type="text" v-model="option.label">
-                    <CirclePoint :data-node="data.id" :data-point="index" @mousedown.prevent="startConnect($event, index)" />
+                    <CirclePoint :data-node="data.id" :data-point="index"
+                        @mousedown.prevent="startConnect($event, index)" />
                 </OptionLabel>
             </OptionList>
             <br>&nbsp;

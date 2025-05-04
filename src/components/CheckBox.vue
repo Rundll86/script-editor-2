@@ -43,17 +43,22 @@ span.checked::before {
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 const emit = defineEmits(["update:modelValue"]);
-const { modelValue } = defineProps({
+const props = defineProps({
     modelValue: {
         type: Boolean,
         default: false
     }
 });
-const isChecked = ref(modelValue)
+const isChecked = ref(props.modelValue)
 function toggle() {
     isChecked.value = !isChecked.value;
 };
-watch(isChecked, () => {
-    emit("update:modelValue", isChecked);
+watch(isChecked, (newV) => {
+    if (newV === props.modelValue) return;
+    emit("update:modelValue", isChecked.value);
+});
+watch(() => props.modelValue, (newV) => {
+    if (newV === isChecked.value) return;
+    isChecked.value = props.modelValue;
 });
 </script>
