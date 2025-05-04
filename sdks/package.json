@@ -5,5 +5,12 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc"
-  }
+  },
+  "files": [
+    "dist/js",
+    "src/ts"
+  ],
+  "types": "src/ts/decompiler.ts",
+  "description": "A script decompiler and player for ScriptEditor Project.",
+  "author": "FallingShrimp"
 }
