@@ -307,7 +307,8 @@ const project = ref<ProjectData>({
     assets: [],
     scripts: [],
     variables: [],
-    saveEditorState: false
+    saveEditorState: false,
+    entryNode: null
 });
 const images = computed(() => {
     return project.value.assets.filter(e => e.type === 'image');
@@ -441,7 +442,7 @@ async function compile() {
         text += node.feeling + "\n";
         text += node.assetId + "\n";
         text += node.outPoints.map(point => `${point.label}:${point.nextId}` as const).join(",") + "\n";
-        outputer.add(`${node.id}.node`, new ZipJS.TextReader(text));
+        outputer.add(`${node.id}${node.id === projectData.entryNode ? ".entry" : ""}.node`, new ZipJS.TextReader(text));
     });
     projectData.characters.forEach((character, index) => {
         let text = "";

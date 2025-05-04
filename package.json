@@ -34,5 +34,9 @@
     "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vue-tsc": "^2.2.8"
-  }
+  },
+  "main": "index.js",
+  "repository": "https://github.com/Rundll86/script-editor-2",
+  "author": "Rundll86 <2028673870@qq.com>",
+  "license": "MIT"
 }

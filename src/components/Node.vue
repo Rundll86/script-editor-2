@@ -13,6 +13,7 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
 import Frame from './Frame.vue';
+import FitValueInput from './FitValueInput.vue';
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -102,9 +103,12 @@ window.addEventListener("mouseup", endConnect);
     <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node">
         <div class="titlebar" data-region="true">
             <CirclePoint :data-node="data.id" data-point="in" />
-            {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}
+            {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}{{ project.entryNode === data.id ? "（入口）" : "" }}
         </div>
         <div class="content">
+            <Frame title="节点">
+                <SmallButton @click="project.entryNode = data.id">设为入口节点</SmallButton>
+            </Frame>
             <CirclePoint normal v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
                 @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
             <div class="node-part" v-if="data.type === 'script'">

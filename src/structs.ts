@@ -62,6 +62,7 @@ export interface ProjectData {
     scripts: string[];
     variables: Variable[];
     saveEditorState: boolean;
+    entryNode: string | null;
     editor?: EditorState;
 }
 export type MessageType = "info" | "warn" | "error";
