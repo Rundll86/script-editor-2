@@ -3,4 +3,5 @@ obj
 bin
 dist
 build
+archive
 *.egg-info
