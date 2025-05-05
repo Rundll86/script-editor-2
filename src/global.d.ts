@@ -6,3 +6,8 @@ declare global {
         project: Ref<ProjectData>;
     }
 }
+declare module "vue" {
+    export interface ComponentCustomProperties {
+        $withBase(url: string): string;
+    }
+}

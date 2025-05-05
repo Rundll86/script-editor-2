@@ -183,9 +183,9 @@
                     是否加密？
                     <Checkbox v-model="editorState.exporter.encryption" />
                     <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
-                        v-model="editorState.exporter.password">
-                    <div class="centerbox">
-                        <WideButton @click="downloadFile(compile(), `${project.name}.script`);">开始编译</WideButton>
+                        v-model="editorState.exporter.password"><br>
+                    <div class="text-right">
+                        <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">开始编译</WideButton>
                     </div>
                 </Frame>
             </Window>
@@ -605,6 +605,10 @@ textarea:focus {
 .inline-right {
     text-align: right;
     display: inline-block;
+}
+
+.text-right {
+    text-align: right;
 }
 
 .margin5 {

@@ -1,3 +1,11 @@
 import { createApp } from 'vue';
 import App from './components/App.vue';
-createApp(App).mount('#app');
+const app = createApp(App);
+app.mixin({
+    methods: {
+        $withBase(url: string) {
+            return new URL(url, window.location.href + "/").href;
+        }
+    }
+});
+app.mount('#app');
