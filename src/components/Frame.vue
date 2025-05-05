@@ -1,5 +1,5 @@
 <template>
-    <div class="frame">
+    <div class="frame" :class="{ 'no-margin': !title?.trim() }">
         <span class="title">
             {{ title }}
             <slot name="afterTitle"></slot>
@@ -21,6 +21,10 @@ defineProps({
     padding: 10px;
     position: relative;
     margin-top: calc(var(--font-size) + 10px);
+}
+
+.frame.no-margin {
+    margin-top: 0;
 }
 
 .title {

@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using System.IO;
+using System;
 using Ionic.Zip;
 namespace ScriptEditor.Decompiler
 {
@@ -78,6 +80,22 @@ namespace ScriptEditor.Decompiler
         public static async Task<ProjectData> Decompile(Stream fileStream, string? password = null)
         {
             var projectData = new ProjectData();
+
+            // 检查是否是Base64编码
+            if (fileStream is MemoryStream memoryStream)
+            {
+                try
+                {
+                    var base64String = Encoding.UTF8.GetString(memoryStream.ToArray());
+                    var decodedBytes = Convert.FromBase64String(base64String);
+                    fileStream = new MemoryStream(decodedBytes);
+                }
+                catch (FormatException)
+                {
+                    memoryStream.Position = 0; // 不是Base64编码，继续使用原始流
+                }
+            }
+
             using var archive = ZipFile.Read(fileStream);
             archive.Password = password;
             foreach (var entry in archive.Entries)

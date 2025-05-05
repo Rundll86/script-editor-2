@@ -1,4 +1,5 @@
 import pyzipper, io
+import base64
 
 
 class ScriptPlayer:
@@ -10,6 +11,16 @@ class ScriptPlayer:
         """
         Decompile the given file and extract assets.
         """
+        # 检查是否是 Base64 编码
+        if isinstance(file_path, (str, bytes)):
+            try:
+                if isinstance(file_path, str):
+                    file_path = file_path.encode("utf8")
+                decoded_bytes = base64.b64decode(file_path, validate=True)
+                file_path = io.BytesIO(decoded_bytes)
+            except (base64.binascii.Error, ValueError):
+                pass  # 不是 Base64 编码，继续使用原始输入
+
         project_data = {
             "nodes": [],
             "characters": [],

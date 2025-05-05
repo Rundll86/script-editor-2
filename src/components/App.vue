@@ -126,7 +126,7 @@
                     <WideButton @click="createVariable">确定</WideButton>
                 </Frame>
                 <OptionList title="变量列表">
-                    <OptionLabel :key="index" v-for="vari,index in project.variables">
+                    <OptionLabel :key="index" v-for="vari, index in project.variables">
                         <input type="text" v-model="vari.name">
                         ▸
                         <Selector :options="variableTypeNames" v-model:selected="vari.type" />
@@ -179,7 +179,7 @@
                     包含完整数据？
                     <Checkbox v-model="editorState.exporter.fullExporting" /><br>
                     输出格式：
-                    <Selector :options="['二进制', 'JSON']" v-model:selected="editorState.exporter.outputFormat" /><br>
+                    <Selector :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" /><br>
                     是否加密？
                     <Checkbox v-model="editorState.exporter.encryption" />
                     <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
@@ -468,7 +468,8 @@ async function compile() {
     });
     const buffer = await outputer.close();
     const arrayBuffer = await buffer.arrayBuffer();
-    return arrayBuffer;
+    if (editorState.value.exporter.outputFormat === 1) return arrayBufferToBase64(arrayBuffer);
+    else return arrayBuffer;
 }
 window.msg = showMessage;
 window.project = project;
@@ -610,6 +611,10 @@ textarea:focus {
     margin: 5px;
 }
 
+.margin5-left {
+    margin-left: 5px;
+}
+
 .thanks {
     font-size: 18px;
     margin-top: 10px;
@@ -630,5 +635,13 @@ a:hover {
 a:active {
     color: gray;
     text-decoration: underline;
+}
+
+.underlined {
+    text-decoration: underline;
+}
+
+.bolded {
+    font-weight: bold;
 }
 </style>

@@ -34,29 +34,34 @@ const avatarData = computed(() => {
 const myAsset: ComputedRef<Asset | undefined> = computed(() => {
     return project.assets[data.assetId ?? 0];
 });
-const nounMatcher = /(\$|\[)\w+[:.]\s*\d+\s*(;|\])/g;
-const unknownNounTip = "▸未知，请在「世界观」选项卡设置◂";
+const allowedPairs = ["$;", "[]", "{}"];
+const allowedSeparators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻";
+const nounSpliter = new RegExp(`[${allowedSeparators.split("").map(char => "\\" + char).join("")}]`, "g");
+const centerd = `\\w+${nounSpliter.source}\\s*\\d+\\s*`;
+const nounMatcher = new RegExp(allowedPairs.map(pair => `(\\${pair[0]}${centerd}\\${pair[1]})`).join("|"), "g");
+const unknownNounTip = "▸未知名词，请在「世界观」选项卡设置◂";
 const nouns: ComputedRef<{
     refer: string;
     callIndex: number;
-    callName: string
+    callName: string;
+    calls: string[];
 }[]> = computed(() => {
     const matches = [...data.message?.match(nounMatcher) ?? []];
     return matches.map(match => {
-        const data = match.slice(1, -1).split(/[:.]/);
+        const data = match.slice(1, -1).split(nounSpliter);
         const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
+        const calls = project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls;
         return {
             refer,
             callIndex: index,
-            callName: project.nouns.find(
-                nounSrc => nounSrc.refer === refer
-            )?.calls[index] ?? unknownNounTip
+            callName: calls?.[index] ?? unknownNounTip,
+            calls: calls ?? []
         };
     }).filter(item => project.nouns.some(nounSrc => nounSrc.refer === item.refer));
 });
 const previewText = computed(() => {
     return data.message?.replace(nounMatcher, match => {
-        const data = match.slice(1, -1).split(/[:.]/);
+        const data = match.slice(1, -1).split(nounSpliter);
         const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
         if (!project.nouns.some(nounSrc => nounSrc.refer === refer)) return match;
         return project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls[index] ?? unknownNounTip;
@@ -147,9 +152,17 @@ window.addEventListener("mouseup", endConnect);
                 内容：
                 <textarea v-model="data.message"></textarea>
                 <Frame title="专有名词" v-if="nouns.length > 0">
-                    <Frame title="预览">{{ previewText }}</Frame>
+                    <Resizable>
+                        <Frame class="preview-text" title="">{{ previewText }}</Frame>
+                    </Resizable>
                     <div :key="index" v-for="noun, index in nouns">
-                        {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：{{ noun.callName }}
+                        {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：
+                        <span class="margin5-left" :class="{
+                            'underlined': i === noun.callIndex,
+                            'bolded': i === noun.callIndex
+                        }" v-for="call, i in noun.calls">
+                            {{ call }}
+                        </span>
                     </div>
                 </Frame>
             </div>
@@ -243,5 +256,10 @@ window.addEventListener("mouseup", endConnect);
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.preview-text {
+    text-wrap-mode: wrap;
+    overflow: hidden;
 }
 </style>
