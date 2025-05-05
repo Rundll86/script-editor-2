@@ -51,7 +51,7 @@ async function readBlob(file: Blob): Promise<string> {
 }
 export class ScriptPlayer {
     public static allowedPairs = ["$;", "[]", "{}"];
-    public static allowedSeparators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻";
+    public static allowedSeparators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻-";
     public static nounSpliter = new RegExp(`[${ScriptPlayer.allowedSeparators.split("").map(char => "\\" + char).join("")}]`, "g");
     public static centerd = `\\w+${ScriptPlayer.nounSpliter.source}\\s*\\d+\\s*`;
     public static nounMatcher = new RegExp(ScriptPlayer.allowedPairs.map(pair => `(\\${pair[0]}${ScriptPlayer.centerd}\\${pair[1]})`).join("|"), "g");

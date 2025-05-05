@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.IO;
 using System;
+using System.Text.RegularExpressions;
 using Ionic.Zip;
 namespace ScriptEditor.Decompiler
 {
@@ -8,37 +9,37 @@ namespace ScriptEditor.Decompiler
     {
         public class Node
         {
-            public string? Id { get; set; }
-            public string? Type { get; set; }
-            public string? Talker { get; set; }
-            public string? Message { get; set; }
-            public string? Feeling { get; set; }
-            public string? AssetId { get; set; }
-            public List<OutPoint>? OutPoints { get; set; }
+            public required string Id { get; set; }
+            public required string Type { get; set; }
+            public required int Talker { get; set; }
+            public required string Message { get; set; }
+            public required int Feeling { get; set; }
+            public required int AssetId { get; set; }
+            public required List<OutPoint> OutPoints { get; set; }
         }
 
         public class OutPoint
         {
-            public string? Label { get; set; }
-            public string? NextId { get; set; }
+            public required string Label { get; set; }
+            public required string NextId { get; set; }
         }
 
         public class Character
         {
-            public string? Name { get; set; }
-            public Dictionary<int, int>? Feelings { get; set; }
+            public required string Name { get; set; }
+            public required Dictionary<int, int> Feelings { get; set; }
         }
 
         public class Noun
         {
-            public string? Refer { get; set; }
-            public List<string>? Calls { get; set; }
+            public required string Refer { get; set; }
+            public required List<string> Calls { get; set; }
         }
 
         public class Asset
         {
-            public string? Type { get; set; }
-            public object? Data { get; set; }
+            public required string Type { get; set; }
+            public required object Data { get; set; }
         }
 
         public class ProjectData
@@ -53,7 +54,16 @@ namespace ScriptEditor.Decompiler
 
         private ProjectData? project;
 
-        public async Task<ProjectData> Open(Stream fileStream, string? password)
+        public static string[] AllowedPairs = { "$;", "[]", "{}" };
+        public static string AllowedSeparators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻-";
+        public static Regex NounSpliter = new Regex($"[{Regex.Escape(AllowedSeparators)}]");
+        public static string Centerd = $@"\w+{NounSpliter} *\d+ *";
+        public static Regex NounMatcher = new Regex(
+            string.Join("|", AllowedPairs.Select(pair => $@"\{pair[0]}{Centerd}\{pair[1]}"))
+        );
+        public static string UnknownNounTip = "▸未知名词◂";
+
+        public async Task<ProjectData> Open(Stream fileStream, string password)
         {
             project = await Decompile(fileStream, password);
             return project;
@@ -62,24 +72,57 @@ namespace ScriptEditor.Decompiler
         public Node FindNodeById(string nodeId)
         {
             if (project == null) throw new InvalidOperationException("Project not loaded");
-            var result = project.Nodes.FirstOrDefault(node => node.Id == nodeId);
-            if (result == null) throw new KeyNotFoundException("Node not found");
+            var result = project.Nodes.FirstOrDefault(node => node.Id == nodeId) ?? throw new KeyNotFoundException("Node not found");
             return result;
         }
 
         public async Task Play(Func<Node, Task<int>> callback, string? nodeId = null)
         {
             if (project == null) throw new InvalidOperationException("Project not loaded");
-            var nodeID = nodeId ?? project.EntryNode;
-            if (nodeID == null) throw new InvalidOperationException("No entry node found, please set a target");
+            var nodeID = (nodeId ?? project.EntryNode) ?? throw new InvalidOperationException("No entry node found, please set a target");
             var node = FindNodeById(nodeID);
             var state = await callback(node);
             if (state >= 0) await Play(callback, node.OutPoints?[state].NextId);
         }
 
+        public T Format<T>(Node node, string key)
+        {
+            if (project == null) throw new InvalidOperationException("Project not loaded");
+            if (key == "message")
+            {
+                return (T)(object)NounMatcher.Replace(node.Message, match =>
+                {
+                    var data = NounSpliter.Split(match.Value[1..^1]);
+                    var refer = data[0].Trim();
+                    if (!int.TryParse(data[1], out var index)) return match.Value;
+                    index--;
+                    var noun = project.Nouns.FirstOrDefault(n => n.Refer == refer);
+                    return noun != null && index >= 0 && index < noun.Calls.Count
+                        ? noun.Calls[index]
+                        : match.Value;
+                });
+            }
+            else if (key == "talker")
+            {
+                var character = project.Characters[node.Talker];
+                return (T)(object)(character?.Name ?? node.Talker.ToString());
+            }
+            else if (key == "feeling")
+            {
+                return (T)(object)project.Feelings[node.Feeling];
+            }
+            else if (key == "assetId")
+            {
+                var asset = project.Assets[node.AssetId];
+                return (T)(asset?.Type == "script" ? asset.Data : node.AssetId);
+            }
+            var propertyValue = (node.GetType().GetProperty(key)?.GetValue(node)) ?? throw new InvalidOperationException($"Property '{key}' not found or is null.");
+            return (T)propertyValue;
+        }
+
         public static async Task<ProjectData> Decompile(Stream fileStream, string? password = null)
         {
-            var projectData = new ProjectData();
+            var projectData = new ProjectData() { EntryNode = null };
 
             // 检查是否是Base64编码
             if (fileStream is MemoryStream memoryStream)
@@ -110,10 +153,10 @@ namespace ScriptEditor.Decompiler
                     {
                         Id = entry.FileName.Replace(".node", "").Replace(".entry", ""),
                         Type = lines[0],
-                        Talker = lines[1],
+                        Talker = int.Parse(lines[1]),
                         Message = lines[2],
-                        Feeling = lines[3],
-                        AssetId = lines[4],
+                        Feeling = int.Parse(lines[3]),
+                        AssetId = int.Parse(lines[4]),
                         OutPoints = []
                     };
 

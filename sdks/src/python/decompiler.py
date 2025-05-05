@@ -1,6 +1,18 @@
 import pyzipper, io
 import base64
+import re
 
+allowed_pairs = ["$;", "[]", "{}"]
+allowed_separators = ":.>%~#@→↣↝↠↣↦⇀⇏⇒⇥⇨⇢⇰⇸⇻⇾▸▹▶▷►▻-"
+noun_spliter = re.compile(f"[{re.escape(allowed_separators)}]")
+centerd = f"\\w+{noun_spliter.pattern}\\s*\\d+\\s*"
+noun_matcher = re.compile(
+    "|".join(
+        f"(\{pair[0]}{centerd}\{pair[1]})"
+        for pair in allowed_pairs
+    )
+)
+unknown_noun_tip = "▸未知名词◂"
 
 class ScriptPlayer:
     def __init__(self):
@@ -115,3 +127,30 @@ class ScriptPlayer:
             if next_index < 0 or next_index >= len(node["outPoints"]):
                 break
             current_node_id = node["outPoints"][next_index]["nextId"]
+
+    def format(self, node: dict, key: str):
+        if not self.project_data:
+            raise ValueError("Project not loaded")
+        if key == "message":
+            return re.sub(
+                noun_matcher,
+                lambda match: self._replace_noun(match.group()),
+                node["message"],
+            )
+        elif key == "talker":
+            character = self.project_data["characters"][node["talker"]]
+            return character["name"] if character else node["talker"]
+        elif key == "feeling":
+            return self.project_data["feelings"][node["feeling"]]
+        elif key == "assetId":
+            asset = self.project_data["assets"][node["assetId"]]
+            return asset["data"] if asset and asset["type"] == "script" else node["assetId"]
+        return node[key]
+
+    def _replace_noun(self, match: str):
+        data = re.split(noun_spliter, match[1:-1])
+        refer, index = data[0].strip(), int(data[1]) - 1
+        noun = next((n for n in self.project_data["nouns"] if n["refer"] == refer), None)
+        if not noun or index < 0 or index >= len(noun["calls"]):
+            return match
+        return noun["calls"][index]
