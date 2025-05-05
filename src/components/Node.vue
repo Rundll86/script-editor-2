@@ -160,7 +160,7 @@ window.addEventListener("mouseup", endConnect);
                         <span class="margin5-left" :class="{
                             'underlined': i === noun.callIndex,
                             'bolded': i === noun.callIndex
-                        }" v-for="call, i in noun.calls">
+                        }" :key="i" v-for="call, i in noun.calls">
                             {{ call }}
                         </span>
                     </div>
