@@ -5,7 +5,8 @@
         <Layer :priority="-1">
             <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <Node v-for="node, index in project.nodes" :key="index" :data="node" :project="project" />
+                <Node v-for="node, index in project.nodes" :key="index" :data="node" :project="project"
+                    :settings="settings" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </Draggable>
         </Layer>
@@ -185,9 +186,18 @@
                     <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
                         v-model="editorState.exporter.password"><br>
                     <div class="text-right">
-                        <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">开始编译</WideButton>
+                        <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">
+                            开始编译
+                        </WideButton>
                     </div>
                 </Frame>
+            </Window>
+            <Window title="设置" v-model:state="windowState.setting">
+                连线模式：
+                <Selector :options="['直线', '曲线']" v-model:selected="settings.lineType" /><br>
+                节点是否可连接到自身？
+                <Checkbox v-model="settings.canConnectToSelf"
+                    @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
             </Window>
         </Layer>
         <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
@@ -200,19 +210,22 @@
     </div>
 </template>
 <script setup lang="ts">
+import type {
+    NodeScript,
+    NodeType,
+    WindowType,
+    MessageType
+} from "@/structs";
 import {
     Vector,
     nodeTypes,
     nodeTypeNames,
-    type EditorState,
-    type NodeScript,
-    type NodeType,
-    type ProjectData,
-    type WindowType,
-    type MessageType,
-    variableTypeNames
+    EditorState,
+    ProjectData,
+    variableTypeNames,
+    Settings
 } from '@/structs';
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
@@ -242,15 +255,9 @@ onMounted(() => {
             node.outPoints.forEach(point => {
                 if (point.outElement) {
                     if (point.followingCursor) {
-                        Drawing.bezierConnect(
-                            elementCenter(point.outElement),
-                            mouse,
-                        );
+                        superConnect(elementCenter(point.outElement), mouse);
                     } else if (point.inElement) {
-                        Drawing.bezierConnectElement(
-                            point.outElement,
-                            point.inElement,
-                        );
+                        superConnectElement(point.outElement, point.inElement);
                     };
                 }
             });
@@ -264,52 +271,12 @@ const windowState = ref<Record<WindowType, boolean>>({
     asset: false,
     project: false,
     variable: false,
-    about: false
+    about: false,
+    setting: false
 });
-const editorState = ref<EditorState>({
-    selectedNodeType: 0,
-    messages: [],
-    workspace: Vector.ZERO,
-    varName: "",
-    varType: 0,
-    exporter: {
-        fullExporting: true,
-        outputFormat: 0,
-        encryption: false,
-        password: ""
-    }
-});
-const project = ref<ProjectData>({
-    name: "Unnamed Project",
-    nodes: [],
-    characters: [],
-    feelings: ["😑平静", "😃开心", "😡生气", "😭难过", "😱害怕", "😍喜爱", "🤮厌恶", "🤑恳求"],
-    nouns: [
-        {
-            refer: "orange",
-            calls: [
-                "橘子",
-                "柑子",
-                "柑橘",
-                "橘柑"
-            ]
-        },
-        {
-            refer: "apple",
-            calls: [
-                "苹果",
-                "智慧果",
-                "林檎",
-                "超凡子"
-            ]
-        }
-    ],
-    assets: [],
-    scripts: [],
-    variables: [],
-    saveEditorState: false,
-    entryNode: null
-});
+const editorState = ref(new EditorState());
+const settings = ref(new Settings());
+const project = ref(new ProjectData());
 const images = computed(() => {
     return project.value.assets.filter(e => e.type === 'image');
 });
@@ -335,6 +302,14 @@ project.value.characters.push({
     feelings: feelingsObject(),
     selectingFeeling: 0
 });
+function superConnect(point1: Vector, point2: Vector) {
+    const func = settings.value.lineType === 0 ? Drawing.straightConnect : Drawing.bezierConnect;
+    func(point1, point2);
+}
+function superConnectElement(element1: HTMLElement, element2: HTMLElement) {
+    const func = settings.value.lineType === 0 ? Drawing.straightConnectElement : Drawing.bezierConnectElement;
+    func(element1, element2);
+}
 function openWindow(type: WindowType) {
     windowState.value[type] = true;
 };
@@ -471,8 +446,22 @@ async function compile() {
     if (editorState.value.exporter.outputFormat === 1) return arrayBufferToBase64(arrayBuffer);
     else return arrayBuffer;
 }
+function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
+    if (!settings.value.canConnectToSelf) {
+        newNodes.forEach(node => {
+            node.outPoints.forEach((point) => {
+                if (point.nextId === node.id) {
+                    point.nextId = null;
+                    point.inElement = null;
+                    showMessage("warn", "节点禁止连接到自身");
+                }
+            });
+        });
+    }
+}
 window.msg = showMessage;
 window.project = project;
+watch(() => project.value.nodes, checkNodeConnectionToSelf, { deep: true });
 </script>
 <style>
 * {
@@ -647,5 +636,23 @@ a:active {
 
 .bolded {
     font-weight: bold;
+}
+
+.sized {
+    width: 100px;
+    height: 100px;
+    position: relative;
+}
+
+.left-top {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
+.right-bottom {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
 }
 </style>

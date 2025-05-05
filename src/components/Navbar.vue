@@ -6,7 +6,8 @@
         <SmallButton @click="$emit('openWindow', 'asset')">📦资源</SmallButton>
         <SmallButton @click="$emit('openWindow', 'variable')">📜变量</SmallButton>
         <SmallButton class="end" @click="$emit('openWindow', 'project')">🗂️项目</SmallButton>
-        <SmallButton @click="$emit('openWindow', 'about')">🔨关于</SmallButton>
+        <SmallButton @click="$emit('openWindow', 'setting')">⚙️设置</SmallButton>
+        <SmallButton @click="$emit('openWindow', 'about')">🧿关于</SmallButton>
     </div>
 </template>
 <script setup lang="ts">

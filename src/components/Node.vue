@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type ComputedRef, type PropType } from 'vue';
-import type { Asset, NodeScript, ProjectData } from '@/structs';
+import type { Asset, NodeScript, ProjectData, Settings } from '@/structs';
 import { nodeTypeNames, nodeTypes } from "@/structs";
 import Draggable from './Draggable.vue';
 import Selector from './Selector.vue';
@@ -13,7 +13,7 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
 import Frame from './Frame.vue';
-const { data, project } = defineProps({
+const { data, project, settings } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
         required: true,
@@ -21,6 +21,10 @@ const { data, project } = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
         required: true,
+    },
+    settings: {
+        type: Object as PropType<Settings>,
+        required: true
     }
 });
 const connecting = ref(false);
@@ -76,11 +80,12 @@ function createOutPoint() {
         followingCursor: false,
     });
 };
-function isElementValidInPoint(element: Element | EventTarget | null): element is HTMLElement {
+function isElementValidInPoint(element: Element | EventTarget | null): element is HTMLElement & { dataset: { node: string, point: "in" } } {
     return !!(
         element &&
         element instanceof HTMLElement &&
-        element.dataset.node
+        element.dataset.node &&
+        element.dataset.point === "in"
     );
 };
 function startConnect(e: MouseEvent, index: number) {
@@ -92,7 +97,7 @@ function startConnect(e: MouseEvent, index: number) {
 function endConnect(e: MouseEvent) {
     if (!connecting.value) return;
     if (isElementValidInPoint(e.target)) {
-        connectingPoint.value.nextId = e.target.dataset.node as string;
+        connectingPoint.value.nextId = e.target.dataset.node;
         connectingPoint.value.inElement = e.target;
     } else {
         connectingPoint.value.nextId = null;
