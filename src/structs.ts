@@ -13,6 +13,12 @@ export class Vector {
         return new Vector(size, size);
     }
 }
+export class ConstantVector<CX extends number, CY extends number> extends Vector {
+    constructor(public x: CX, public y: CY) {
+        super(x, y);
+    }
+}
+new ConstantVector(114, 514).x === 1919810;
 export class Configurable {
     self(executor: (self: this) => void) {
         executor(this);
