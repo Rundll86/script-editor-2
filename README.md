@@ -60,6 +60,8 @@ ScriptEditor 是一个基于界面的 RPG/AVG 游戏剧本设计器，旨在帮�
 
 感谢以下成员对项目的贡献：
 
-- **FallingShrimp**（陨落基围虾） - [个人主页](https://rundll86.github.io)
-- **TangDo158**（唐豆） - [个人主页](https://www.ccw.site/student/6107cafb76415b2f27e0d4d4)
-- **Cyberexplorer**（赛博猫猫） - [个人主页](https://lanwywritexu.github.io/about)
+- **FallingShrimp** - [个人主页](https://rundll86.github.io)
+- **TangDo158** - [个人主页](https://www.ccw.site/student/6107cafb76415b2f27e0d4d4)
+- **Cyberexplorer** - [个人主页](https://lanwywritexu.github.io/about)
+
+> Readme written by **GPT-4o**
