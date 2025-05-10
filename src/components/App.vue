@@ -32,11 +32,8 @@
                 <Window v-else-if="target === 'world'" :id="'world'" title="世界观设定">
                     <OptionList title="角色列表">
                         <template #afterTitle>
-                            <SquareButton @click="project.characters.push({
-                                name: 'Unnamed Character',
-                                feelings: feelingsObject(),
-                                selectingFeeling: 0,
-                            })">+</SquareButton>
+                            <SquareButton @click="project.characters.push(new Character('', feelingsObject()))">+
+                            </SquareButton>
                         </template>
                         <OptionLabel v-for="character, index in project.characters" :key="index">
                             <input type="text" v-model="project.characters[index].name" placeholder="角色名称..." />
@@ -67,7 +64,7 @@
                     </OptionList>
                     <OptionList title="专有名词">
                         <template #afterTitle>
-                            <SquareButton @click="project.nouns.push({ refer: '', calls: ['a', 'b'] })">+
+                            <SquareButton @click="project.nouns.push(new Noun())">+
                             </SquareButton>
                         </template>
                         <OptionLabel v-for="noun, index in project.nouns" :key="index">
@@ -112,11 +109,7 @@
                     </OptionList>
                     <OptionList title="脚本">
                         <template #afterTitle>
-                            <SquareButton @click="project.assets.push({
-                                name: 'Unnamed Script',
-                                type: 'script',
-                                data: null
-                            })">+</SquareButton>
+                            <SquareButton @click="project.assets.push(new Asset('', 'script'))">+</SquareButton>
                         </template>
                         <OptionLabel v-for="script, index in scripts" :key="index">
                             <AssetBar v-model:data="scripts[index]"
@@ -235,11 +228,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import type {
+import {
     NodeScript,
-    NodeType,
-    WindowType,
-    MessageType
+    type NodeType,
+    type WindowType,
+    type MessageType,
+    Variable
 } from "@/structs";
 import {
     Vector,
@@ -249,7 +243,11 @@ import {
     ProjectData,
     variableTypeNames,
     Settings,
-    windowTypes
+    windowTypes,
+    Character,
+    Noun,
+    Asset,
+    OutPoint
 } from '@/structs';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, randFloat, uploadFile, uuid } from '@/tools';
@@ -324,11 +322,6 @@ window.addEventListener("mousemove", (e) => {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
 });
-project.value.characters.push({
-    name: "CharacterA",
-    feelings: feelingsObject(),
-    selectingFeeling: 0
-});
 function superConnect(point1: Vector, point2: Vector) {
     const func = settings.value.lineType === 0 ? Drawing.straightConnect : Drawing.bezierConnect;
     func(point1, point2);
@@ -338,63 +331,29 @@ function superConnectElement(element1: HTMLElement, element2: HTMLElement) {
     func(element1, element2,);
 }
 function createNode(type: NodeType) {
-    const node: NodeScript = {
-        id: uuid(),
-        position: new Vector(
-            settings.value.createNodeOffset - editorState.value.workspace.x + randFloat(
-                -settings.value.createNodeOffset / 2,
-                settings.value.createNodeOffset / 2
-            ),
-            settings.value.createNodeOffset - editorState.value.workspace.y + randFloat(
-                -settings.value.createNodeOffset / 2,
-                settings.value.createNodeOffset / 2
-            )
-        ),
-        type,
-        outPoints: [
-            {
-                nextId: null,
-                outElement: null,
-                inElement: null,
-                label: "defaultPoint",
-                followingCursor: false
-            }
-        ]
-    };
+    const node: NodeScript = new NodeScript(uuid(), type);
     project.value.nodes.push(node);
-};
+}
 function deleteSelfMessage(index: number) {
     editorState.value.messages.splice(index, 1);
-};
+}
 function showMessage(type: MessageType, data: string) {
     editorState.value.messages.push({ type, data });
-};
+}
 async function createImage() {
     const files = await uploadFile("image/*", false);
     files.forEach(file => {
-        project.value.assets.push({
-            name: file.filename,
-            type: 'image',
-            data: file
-        });
+        project.value.assets.push(new Asset(file.filename, 'image', file));
     });
-};
+}
 async function createVideo() {
     const files = await uploadFile("video/*", false);
     files.forEach(file => {
-        project.value.assets.push({
-            name: file.filename,
-            type: 'video',
-            data: file
-        });
+        project.value.assets.push(new Asset(file.filename, 'video', file));
     });
-};
+}
 async function createVariable() {
-    project.value.variables.push({
-        name: editorState.value.varName,
-        type: editorState.value.varType,
-        value: ""
-    });
+    project.value.variables.push(new Variable('', 0));
     editorState.value.varName = "";
 }
 async function saveData() {
@@ -413,10 +372,10 @@ async function saveData() {
         return value;
     }));
     return await new Blob([btoa(encodeURIComponent(JSON.stringify(sanitizedProject)))]).arrayBuffer();
-};
+}
 async function saveProject() {
     downloadFile(await saveData(), `${project.value.name}.ssp`);
-};
+}
 async function loadProject() {
     const file = await uploadFile("*.ssp") ?? undefined;
     const data: ProjectData = JSON.parse(decodeURIComponent(atob(new TextDecoder().decode(file))));
@@ -435,7 +394,7 @@ async function loadProject() {
             point.inElement = document.querySelector(`[data-node="${point.nextId}"][data-point="in"]`);
         }));
     });
-};
+}
 async function compile() {
     const outputer = new ZipJS.ZipWriter(
         new ZipJS.BlobWriter("application/zip"),
