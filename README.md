@@ -19,18 +19,25 @@ ScriptEditor 是一个基于界面的 RPG/AVG 游戏剧本设计器，旨在帮�
 ## 安装步骤
 
 1. 克隆项目到本地：
+
    ```bash
    git clone https://github.com/Rundll86/script-editor-2.git
    ```
+
 2. 进入项目目录：
+
    ```bash
    cd script-editor-2
    ```
+
 3. 安装依赖：
+
    ```bash
    npm install
    ```
+
 4. 启动开发服务器：
+
    ```bash
    npm run dev
    ```
@@ -43,7 +50,7 @@ ScriptEditor 是一个基于界面的 RPG/AVG 游戏剧本设计器，旨在帮�
 4. 上传资源文件（图像、视频、脚本等）。
 5. 配置角色和对应情绪的头像资源。
 6. 创建节点并整理节点树。
-7. **编译！**
+7. **编译**
 
 ## 开源许可
 
@@ -52,10 +59,7 @@ ScriptEditor 是一个基于界面的 RPG/AVG 游戏剧本设计器，旨在帮�
 ## 特别鸣谢
 
 感谢以下成员对项目的贡献：
+
 - **FallingShrimp**（陨落基围虾） - [个人主页](https://rundll86.github.io)
 - **TangDo158**（唐豆） - [个人主页](https://www.ccw.site/student/6107cafb76415b2f27e0d4d4)
 - **Cyberexplorer**（赛博猫猫） - [个人主页](https://lanwywritexu.github.io/about)
-
-## 仓库地址
-
-访问 [GitHub 仓库](https://github.com/Rundll86/script-editor-2) 获取更多信息。
