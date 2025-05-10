@@ -1,17 +1,24 @@
 <script setup lang="ts">
+import type { PropType } from 'vue';
 import Draggable from './Draggable.vue';
 import Resizable from './Resizable.vue';
 import SquareButton from './SquareButton.vue';
+import type { WindowType } from '@/structs';
 defineProps({
     title: String,
-    state: Boolean
+    id: {
+        type: String as PropType<WindowType>,
+        required: true
+    }
 });
 </script>
 <template>
-    <Draggable class="window" v-if="state">
+    <Draggable v-model:dragging="window.windowDraggings.value[id]" v-model:x="window.windowPositions.value[id].x"
+        v-model:y="window.windowPositions.value[id].y" class="window">
         <div class="titlebar" data-region="true">
             {{ title }}
-            <SquareButton class="close-btn" @click="$emit('update:state', false)">×</SquareButton>
+            <SquareButton style="margin: 0 0 0 auto;" @click="window.closeWindow(id)">×</SquareButton>
+            <SquareButton style="margin: 0 0 0 5px;" @click="window.moveToTop(id)">↥</SquareButton>
         </div>
         <Resizable :enable="false" class="content">
             <slot></slot>
@@ -35,10 +42,6 @@ defineProps({
     padding: var(--r);
     border-radius: var(--r) var(--r) 0 0;
     display: flex;
-}
-
-.close-btn {
-    margin-left: auto;
 }
 
 .content {

@@ -71,6 +71,7 @@ const previewText = computed(() => {
         return project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls[index] ?? unknownNounTip;
     }) ?? "";
 });
+const isEntry = computed(() => project.entryNode === data.id);
 function createOutPoint() {
     data.outPoints.push({
         label: "",
@@ -112,12 +113,14 @@ window.addEventListener("mouseup", endConnect);
     <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node">
         <div class="titlebar" data-region="true">
             <CirclePoint :data-node="data.id" data-point="in" />
-            {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}{{ project.entryNode === data.id ? "（入口）" : "" }}
+            {{ isEntry ? "◈" : "" }}
+            {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}
+            <SquareButton @click="$emit('delete')">🗑️</SquareButton>
+            <SquareButton class="margin-auto-left" @click="project.entryNode = data.id">
+                {{ isEntry ? "◆" : "◇" }}
+            </SquareButton>
         </div>
         <div class="content">
-            <Frame title="节点">
-                <SmallButton @click="project.entryNode = data.id">设为入口节点</SmallButton>
-            </Frame>
             <CirclePoint normal :key="index" v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
                 @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
             <div class="node-part" v-if="data.type === 'script'">
@@ -222,6 +225,10 @@ window.addEventListener("mouseup", endConnect);
     border-radius: var(--r) var(--r) 0 0;
     display: flex;
     align-items: center;
+}
+
+.delete-btn {
+    margin-left: auto;
 }
 
 .content {

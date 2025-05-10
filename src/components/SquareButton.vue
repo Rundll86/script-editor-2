@@ -13,6 +13,7 @@ button {
     align-items: center;
     transition: all 0.2s ease-out;
     margin: 0 5px;
+    border-radius: 5px;
 }
 
 button:hover {

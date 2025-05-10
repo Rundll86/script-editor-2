@@ -1,4 +1,5 @@
-export type WindowType = "node" | "world" | "asset" | "project" | "variable" | "about" | "setting";
+export type WindowType = typeof windowTypes[number];
+export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"];
 export type NodeType = typeof nodeTypes[number];
@@ -39,13 +40,11 @@ export class Noun {
     }
 }
 export type AssetType = "image" | "video" | "script";
-
 export type AssetTypeMap<T extends AssetType = AssetType> = {
     image: ArrayBuffer;
     video: ArrayBuffer;
     script: string;
 }[T];
-
 export class Asset<T extends AssetType = AssetType> {
     name: string;
     type: T;
@@ -109,28 +108,23 @@ export interface Message {
     type: MessageType;
     data: string;
 }
+export class ExporterState {
+    fullExporting: boolean = true;
+    outputFormat: number = 0;
+    encryption: boolean = false;
+    password: string = "";
+}
 export class EditorState {
     selectedNodeType: number = 0;
     messages: Message[] = [];
     workspace: Vector = Vector.ZERO;
     varName: string = "";
     varType: number = 0;
-    exporter: {
-        fullExporting: boolean;
-        outputFormat: number;
-        encryption: boolean;
-        password: string;
-    };
-    constructor() {
-        this.exporter = {
-            fullExporting: true,
-            outputFormat: 0,
-            encryption: false,
-            password: ""
-        };
-    }
+    exporter: ExporterState = new ExporterState();
 }
 export class Settings {
     lineType: number = 0; // 0: straight, 1: curved
     canConnectToSelf: boolean = false;
+    curveMagnification: number = 0.5;
+    createNodeOffset: number = 100;
 }

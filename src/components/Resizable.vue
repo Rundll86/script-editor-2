@@ -16,6 +16,7 @@ interface TargetAndVector {
     movementY: number;
     preventDefault: () => void;
 }
+import { limited } from '@/tools';
 import { ref, watch, type PropType } from 'vue';
 const props = defineProps({
     width: {
@@ -55,9 +56,7 @@ window.addEventListener("mousemove", e => {
 });
 window.addEventListener("mousemove", updateResize);
 window.addEventListener("mouseup", endResize);
-function limited(min: number, value: number, max: number) {
-    return Math.min(Math.max(value, min), max);
-};
+
 function startResize(e: TargetAndVector) {
     e.preventDefault();
     isResizing.value = true;

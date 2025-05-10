@@ -82,7 +82,7 @@ watch([x, y], ([newX, newY]) => {
     if (newY !== props.y) emit("update:y", newY);
 });
 watch(isDragging, (newDragging) => {
-    emit("update:dragging", newDragging);
+    if (newDragging !== props.dragging) emit("update:dragging", newDragging);
 });
 </script>
 <style scoped>

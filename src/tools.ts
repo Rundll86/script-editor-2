@@ -49,36 +49,7 @@ export function findClosestBezierCircleIntersection(
     };
     return closestIntersection;
 };
-export function calcControl(
-    a: Vector,
-    b: Vector,
-    offsetMulitplier: number = 0.5,
-    mode: "vertical" | "horizontal" | "ease" = "vertical"
-): Record<"control1" | "control2", Vector> {
-    const control1 = new Vector(0, 0);
-    const control2 = new Vector(0, 0);
-    if (mode === "ease") {
-        const distance = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-        const offset = distance * offsetMulitplier;
-        control1.x = a.x + (b.x - a.x) / 3 + offset;
-        control1.y = a.y + (b.y - a.y) / 3 - offset;
-        control2.x = b.x - (b.x - a.x) / 3 - offset;
-        control2.y = b.y - (b.y - a.y) / 3 + offset;
-    } else if (mode === "vertical") {
-        control1.x = a.x + (b.x - a.x) * offsetMulitplier;
-        control1.y = a.y;
-        control2.x = b.x - (b.x - a.x) * offsetMulitplier;
-        control2.y = b.y;
-    } else if (mode === "horizontal") {
-        control1.x = a.x;
-        control1.y = a.y + (b.y - a.y) * offsetMulitplier;
-        control2.x = b.x;
-        control2.y = b.y - (b.y - a.y) * offsetMulitplier;
-    } else {
-        unused<never>(mode);
-    };
-    return { control1, control2 };
-};
+
 type RecursionArray<T> = T | T[] | RecursionArray<T>[];
 export function keyMirror(...keys: RecursionArray<string>[]) {
     const result: Record<string, string> = {};
@@ -127,6 +98,9 @@ export async function frame(count: number = 1) {
         });
     });
 }
+export function randFloat(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+}
 export function elementCenter(element: HTMLElement) {
     const rect = element.getBoundingClientRect();
     return new Vector(rect.left + rect.width / 2, rect.top + rect.height / 2);
@@ -134,7 +108,40 @@ export function elementCenter(element: HTMLElement) {
 export namespace Drawing {
     let stageCanvas: HTMLCanvasElement;
     let context: CanvasRenderingContext2D;
+    let offsetMulitplier: number = 0.5;
     const lineWidth = 2;
+    export function setOffsetMulitplier(data: number) {
+        offsetMulitplier = data;
+    };
+    export function calcControl(
+        a: Vector,
+        b: Vector,
+        mode: "vertical" | "horizontal" | "ease" = "vertical"
+    ): Record<"control1" | "control2", Vector> {
+        const control1 = new Vector(0, 0);
+        const control2 = new Vector(0, 0);
+        if (mode === "ease") {
+            const distance = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+            const offset = distance * offsetMulitplier;
+            control1.x = a.x + (b.x - a.x) / 3 + offset;
+            control1.y = a.y + (b.y - a.y) / 3 - offset;
+            control2.x = b.x - (b.x - a.x) / 3 - offset;
+            control2.y = b.y - (b.y - a.y) / 3 + offset;
+        } else if (mode === "vertical") {
+            control1.x = a.x + (b.x - a.x) * offsetMulitplier;
+            control1.y = a.y;
+            control2.x = b.x - (b.x - a.x) * offsetMulitplier;
+            control2.y = b.y;
+        } else if (mode === "horizontal") {
+            control1.x = a.x;
+            control1.y = a.y + (b.y - a.y) * offsetMulitplier;
+            control2.x = b.x;
+            control2.y = b.y - (b.y - a.y) * offsetMulitplier;
+        } else {
+            unused<never>(mode);
+        };
+        return { control1, control2 };
+    };
     export function resizeCanvas() {
         stageCanvas.width = stageCanvas.clientWidth;
         stageCanvas.height = stageCanvas.clientHeight;
@@ -300,3 +307,6 @@ export function base64ToArrayBuffer(base64: string) {
     return buffer;
 }
 export const unknownImageURL = createObjectURL(unknownImage);
+export function limited(min: number, value: number, max: number) {
+    return Math.min(Math.max(value, min), max);
+};

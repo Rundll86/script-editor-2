@@ -6,6 +6,16 @@ app.mixin({
         $withBase(url: string) {
             return new URL(url, window.location.href + "/").href;
         }
-    }
+    },
+    data() {
+        return {
+            window
+        }
+    },
+    mounted() {
+        window.addEventListener("resize", () => {
+            this.$forceUpdate();
+        });
+    },
 });
 app.mount('#app');

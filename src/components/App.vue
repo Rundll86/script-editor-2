@@ -5,200 +5,222 @@
         <Layer :priority="-1">
             <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <Node v-for="node, index in project.nodes" :key="index" :data="node" :project="project"
-                    :settings="settings" />
+                <Node v-for="node, index in project.nodes" :key="node.id" @delete="deleteNode(index)" :data="node"
+                    :project="project" :settings="settings" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </Draggable>
         </Layer>
-        <Navbar :states="windowState" @openWindow="openWindow($event)" />
+        <Navbar />
         <Layer :priority="0">
-            <Window title="节点管理" v-model:state="windowState.node">
-                <Frame title="新建节点">
-                    选择一个节点类型：
-                    <Selector :options="nodeTypeNames" v-model:selected="editorState.selectedNodeType" /><br>
-                    <WideButton superwide @click="createNode(nodeTypes[editorState.selectedNodeType])">新建</WideButton>
-                </Frame>
-                <Frame title="节点列表">
-                    <div class="node-list">
-                        <span class="node-name" :key="index" v-for="node, index in project.nodes">{{ node.id }}</span>
-                    </div>
-                </Frame>
-            </Window>
-            <Window title="世界观设定" v-model:state="windowState.world">
-                <OptionList title="角色列表">
-                    <template #afterTitle>
-                        <SquareButton @click="project.characters.push({
-                            name: 'Unnamed Character',
-                            feelings: feelingsObject(),
-                            selectingFeeling: 0,
-                        })">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="character, index in project.characters" :key="index">
-                        <input type="text" v-model="project.characters[index].name" placeholder="角色名称..." />
-                        <SquareButton @click="project.characters.splice(index, 1)">🗑️</SquareButton>
-                        <Deskable>
-                            <template #toggler="props">
-                                <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
-                            </template>
-                            <template #content>
-                                情绪：
-                                <Selector :options="project.feelings" v-model:selected="character.selectingFeeling" />
-                                资源：
-                                <Selector :options="project.assets.map(asset => asset.name)"
-                                    v-model:selected="character.feelings[character.selectingFeeling]" />
-                            </template>
-                        </Deskable>
-                    </OptionLabel>
-                </OptionList>
-                <OptionList title="情绪种类">
-                    <template #afterTitle>
-                        <SquareButton @click="project.feelings.push('')">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="_, index in project.feelings" :key="index">
-                        <input type="text" v-model="project.feelings[index]" placeholder="情绪名称..." />
-                        <SquareButton @click="project.feelings.splice(index, 1)">🗑️</SquareButton>
-                    </OptionLabel>
-                </OptionList>
-                <OptionList title="专有名词">
-                    <template #afterTitle>
-                        <SquareButton @click="project.nouns.push({ refer: '', calls: ['a', 'b'] })">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="noun, index in project.nouns" :key="index">
-                        <input type="text" v-model="project.nouns[index].refer" placeholder="引用名称..." />
-                        <SquareButton @click="project.nouns.splice(index, 1)">🗑️</SquareButton>
-                        <Deskable>
-                            <template #toggler="props">
-                                <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
-                            </template>
-                            <template #content>
-                                <SmallButton @click="noun.calls.push('')">新建别名</SmallButton>
-                                <div :key="index" v-for="_, index in noun.calls">
-                                    别名{{ index + 1 }}:
-                                    <input type="text" v-model="noun.calls[index]" placeholder="别名..." />
-                                    <SquareButton @click="noun.calls.splice(index, 1)">🗑️</SquareButton>
-                                </div>
-                            </template>
-                        </Deskable>
-                    </OptionLabel>
-                </OptionList>
-            </Window>
-            <Window title="资源管理" v-model:state="windowState.asset">
-                <OptionList title="图像">
-                    <template #afterTitle>
-                        <SquareButton @click="createImage">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="image, index in images" :key="index">
-                        <AssetBar v-model:data="images[index]"
-                            @delete="project.assets.splice(project.assets.indexOf(image), 1)" />
-                    </OptionLabel>
-                    <span v-if="images.length === 0">没有上传任何图像！</span>
-                </OptionList>
-                <OptionList title="视频">
-                    <template #afterTitle>
-                        <SquareButton @click="createVideo">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="video, index in videos" :key="index">
-                        <AssetBar v-model:data="videos[index]"
-                            @delete="project.assets.splice(project.assets.indexOf(video), 1)" />
-                    </OptionLabel>
-                    <span v-if="videos.length === 0">没有上传任何视频！</span>
-                </OptionList>
-                <OptionList title="脚本">
-                    <template #afterTitle>
-                        <SquareButton @click="project.assets.push({
-                            name: 'Unnamed Script',
-                            type: 'script',
-                            data: null
-                        })">+</SquareButton>
-                    </template>
-                    <OptionLabel v-for="script, index in scripts" :key="index">
-                        <AssetBar v-model:data="scripts[index]"
-                            @delete="project.assets.splice(project.assets.indexOf(script), 1)" />
-                    </OptionLabel>
-                    <span v-if="scripts.length === 0">没有定义任何脚本！</span>
-                </OptionList>
-            </Window>
-            <Window title="变量" v-model:state="windowState.variable">
-                <Frame title="创建变量" class="centerbox">
-                    变量名：
-                    <input type="text" v-model="editorState.varName" placeholder="Variable...."><br>
-                    数据类型▹
-                    <Selector class="margin5" :options="variableTypeNames" v-model:selected="editorState.varType" /><br>
-                    <WideButton @click="createVariable">确定</WideButton>
-                </Frame>
-                <OptionList title="变量列表">
-                    <OptionLabel :key="index" v-for="vari, index in project.variables">
-                        <input type="text" v-model="vari.name">
-                        ▸
-                        <Selector :options="variableTypeNames" v-model:selected="vari.type" />
-                        <Deskable>
-                            <template #toggler="props">
-                                <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
-                            </template>
-                            <template #content>
-                                初始值：
-                                <input type="text" v-model="vari.value">
-                            </template>
-                        </Deskable>
-                    </OptionLabel>
-                </OptionList>
-            </Window>
-            <Window title="关于" v-model:state="windowState.about">
-                <div class="centerbox">
-                    ScriptEditor是一个基于界面的RPG/AVG游戏剧本设计器。<br>
-                    <div class="inline-right margin5">
-                        技术栈<br>
-                        开源许可<br>
-                        仓库
-                    </div>
-                    <div class="inline-left margin5">
-                        <b>Vue+Vite</b><br>
-                        <b>MIT</b><br>
-                        <a href="https://github.com/Rundll86/script-editor-2" target="_blank">
-                            <b>Github</b>
-                        </a>
-                    </div><br>
-                    <span class="thanks">特别鸣谢</span><br>
-                    <Member name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
-                    <Member name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
-                    <Member with-border name="TangDo158" alias="唐豆"
-                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                    <Member name="Tin-Dunwi" alias="冬薇"
-                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                    <Member name="Cyberexplorer" alias="赛博猫猫"
-                        website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                </div>
-            </Window>
-            <Window title="项目" v-model:state="windowState.project">
-                项目名称：
-                <input type="text" v-model="project.name"><br>
-                储存编辑器状态？
-                <Checkbox v-model="project.saveEditorState" />
-                <WideButton superwide @click="saveProject">保存</WideButton><br>
-                <WideButton superwide @click="loadProject">加载</WideButton>
-                <Frame title="编译菜单">
-                    包含完整数据？
-                    <Checkbox v-model="editorState.exporter.fullExporting" /><br>
-                    输出格式：
-                    <Selector :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" /><br>
-                    是否加密？
-                    <Checkbox v-model="editorState.exporter.encryption" />
-                    <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
-                        v-model="editorState.exporter.password"><br>
-                    <div class="text-right">
-                        <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">
-                            开始编译
+            <div v-for="target in orders" class="bus">
+                <Window v-if="target === 'node'" :id="'node'" title="节点管理">
+                    <Frame title="新建节点">
+                        选择一个节点类型：
+                        <Selector :options="nodeTypeNames" v-model:selected="editorState.selectedNodeType" /><br>
+                        <WideButton superwide @click="createNode(nodeTypes[editorState.selectedNodeType])">
+                            新建
                         </WideButton>
+                    </Frame>
+                    <Frame title="节点列表">
+                        <div class="node-list">
+                            <span class="node-name" :key="index" v-for="node, index in project.nodes">
+                                {{ node.id }}
+                            </span>
+                        </div>
+                    </Frame>
+                </Window>
+                <Window v-else-if="target === 'world'" :id="'world'" title="世界观设定">
+                    <OptionList title="角色列表">
+                        <template #afterTitle>
+                            <SquareButton @click="project.characters.push({
+                                name: 'Unnamed Character',
+                                feelings: feelingsObject(),
+                                selectingFeeling: 0,
+                            })">+</SquareButton>
+                        </template>
+                        <OptionLabel v-for="character, index in project.characters" :key="index">
+                            <input type="text" v-model="project.characters[index].name" placeholder="角色名称..." />
+                            <SquareButton @click="project.characters.splice(index, 1)">🗑️</SquareButton>
+                            <Deskable>
+                                <template #toggler="props">
+                                    <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
+                                </template>
+                                <template #content>
+                                    情绪：
+                                    <Selector :options="project.feelings"
+                                        v-model:selected="character.selectingFeeling" />
+                                    资源：
+                                    <Selector :options="project.assets.map(asset => asset.name)"
+                                        v-model:selected="character.feelings[character.selectingFeeling]" />
+                                </template>
+                            </Deskable>
+                        </OptionLabel>
+                    </OptionList>
+                    <OptionList title="情绪种类">
+                        <template #afterTitle>
+                            <SquareButton @click="project.feelings.push('')">+</SquareButton>
+                        </template>
+                        <OptionLabel v-for="_, index in project.feelings" :key="index">
+                            <input type="text" v-model="project.feelings[index]" placeholder="情绪名称..." />
+                            <SquareButton @click="project.feelings.splice(index, 1)">🗑️</SquareButton>
+                        </OptionLabel>
+                    </OptionList>
+                    <OptionList title="专有名词">
+                        <template #afterTitle>
+                            <SquareButton @click="project.nouns.push({ refer: '', calls: ['a', 'b'] })">+
+                            </SquareButton>
+                        </template>
+                        <OptionLabel v-for="noun, index in project.nouns" :key="index">
+                            <input type="text" v-model="project.nouns[index].refer" placeholder="引用名称..." />
+                            <SquareButton @click="project.nouns.splice(index, 1)">🗑️</SquareButton>
+                            <Deskable>
+                                <template #toggler="props">
+                                    <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
+                                </template>
+                                <template #content>
+                                    <SmallButton @click="noun.calls.push('')">新建别名</SmallButton>
+                                    <div :key="index" v-for="_, index in noun.calls">
+                                        别名{{ index + 1 }}:
+                                        <input type="text" v-model="noun.calls[index]" placeholder="别名..." />
+                                        <SquareButton @click="noun.calls.splice(index, 1)">🗑️</SquareButton>
+                                    </div>
+                                </template>
+                            </Deskable>
+                        </OptionLabel>
+                    </OptionList>
+                </Window>
+                <Window v-else-if="target === 'asset'" :id="'asset'" title="资源管理">
+                    <OptionList title="图像">
+                        <template #afterTitle>
+                            <SquareButton @click="createImage">+</SquareButton>
+                        </template>
+                        <OptionLabel v-for="image, index in images" :key="index">
+                            <AssetBar v-model:data="images[index]"
+                                @delete="project.assets.splice(project.assets.indexOf(image), 1)" />
+                        </OptionLabel>
+                        <span v-if="images.length === 0">没有上传任何图像！</span>
+                    </OptionList>
+                    <OptionList title="视频">
+                        <template #afterTitle>
+                            <SquareButton @click="createVideo">+</SquareButton>
+                        </template>
+                        <OptionLabel v-for="video, index in videos" :key="index">
+                            <AssetBar v-model:data="videos[index]"
+                                @delete="project.assets.splice(project.assets.indexOf(video), 1)" />
+                        </OptionLabel>
+                        <span v-if="videos.length === 0">没有上传任何视频！</span>
+                    </OptionList>
+                    <OptionList title="脚本">
+                        <template #afterTitle>
+                            <SquareButton @click="project.assets.push({
+                                name: 'Unnamed Script',
+                                type: 'script',
+                                data: null
+                            })">+</SquareButton>
+                        </template>
+                        <OptionLabel v-for="script, index in scripts" :key="index">
+                            <AssetBar v-model:data="scripts[index]"
+                                @delete="project.assets.splice(project.assets.indexOf(script), 1)" />
+                        </OptionLabel>
+                        <span v-if="scripts.length === 0">没有定义任何脚本！</span>
+                    </OptionList>
+                </Window>
+                <Window v-else-if="target === 'variable'" :id="'variable'" title="变量">
+                    <Frame title="创建变量" class="centerbox">
+                        变量名：
+                        <input type="text" v-model="editorState.varName" placeholder="Variable...."><br>
+                        数据类型▹
+                        <Selector class="margin5" :options="variableTypeNames" v-model:selected="editorState.varType" />
+                        <br>
+                        <WideButton @click="createVariable">确定</WideButton>
+                    </Frame>
+                    <OptionList title="变量列表">
+                        <OptionLabel :key="index" v-for="vari, index in project.variables">
+                            <input type="text" v-model="vari.name">
+                            ▸
+                            <Selector :options="variableTypeNames" v-model:selected="vari.type" />
+                            <Deskable>
+                                <template #toggler="props">
+                                    <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
+                                </template>
+                                <template #content>
+                                    初始值：
+                                    <input type="text" v-model="vari.value">
+                                </template>
+                            </Deskable>
+                        </OptionLabel>
+                    </OptionList>
+                </Window>
+                <Window v-else-if="target === 'about'" :id="'about'" title="关于">
+                    <div class="centerbox">
+                        ScriptEditor是一个基于界面的RPG/AVG游戏剧本设计器。<br>
+                        <div class="inline-right margin5">
+                            技术栈<br>
+                            开源许可<br>
+                            仓库
+                        </div>
+                        <div class="inline-left margin5">
+                            <b>Vue+Vite</b><br>
+                            <b>MIT</b><br>
+                            <a href="https://github.com/Rundll86/script-editor-2" target="_blank">
+                                <b>Github</b>
+                            </a>
+                        </div><br>
+                        <span class="thanks">特别鸣谢</span><br>
+                        <Member name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
+                        <Member name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
+                        <Member with-border name="TangDo158" alias="唐豆"
+                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                        <Member name="Tin-Dunwi" alias="冬薇"
+                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                        <Member name="Cyberexplorer" alias="赛博猫猫"
+                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
                     </div>
-                </Frame>
-            </Window>
-            <Window title="设置" v-model:state="windowState.setting">
-                连线模式：
-                <Selector :options="['直线', '曲线']" v-model:selected="settings.lineType" /><br>
-                节点是否可连接到自身？
-                <Checkbox v-model="settings.canConnectToSelf"
-                    @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
-            </Window>
+                </Window>
+                <Window v-else-if="target === 'project'" :id="'project'" title="项目">
+                    项目名称：
+                    <input type="text" v-model="project.name"><br>
+                    储存编辑器状态？
+                    <Checkbox v-model="project.saveEditorState" />
+                    <WideButton superwide @click="saveProject">保存</WideButton><br>
+                    <WideButton superwide @click="loadProject">加载</WideButton>
+                    <Frame title="编译菜单">
+                        包含完整数据？
+                        <Checkbox v-model="editorState.exporter.fullExporting" /><br>
+                        输出格式：
+                        <Selector :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" />
+                        <br>
+                        是否加密？
+                        <Checkbox v-model="editorState.exporter.encryption" />
+                        <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
+                            v-model="editorState.exporter.password"><br>
+                        <div class="text-right">
+                            <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">
+                                开始编译
+                            </WideButton>
+                        </div>
+                    </Frame>
+                </Window>
+                <Window v-else-if="target === 'setting'" :id="'setting'" title="设置">
+                    <Frame title="线条">
+                        连线模式：
+                        <Selector :options="['直线', '曲线']" v-model:selected="settings.lineType" />
+                        <div v-if="settings.lineType === 1">
+                            曲线倍率：
+                            <Ranger :mode="'percent'" :fix="2" :min="-0.5" :max="1.5"
+                                v-model:value="settings.curveMagnification" />
+                        </div>
+                    </Frame>
+                    <Frame title="节点">
+                        节点是否可连接到自身？
+                        <Checkbox v-model="settings.canConnectToSelf"
+                            @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
+                        <br>
+                        创建节点偏移：<br>
+                        <Ranger :max="window.innerHeight / 2" v-model:value="settings.createNodeOffset" />
+                    </Frame>
+                </Window>
+            </div>
         </Layer>
         <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
             info: message.type === 'info',
@@ -223,10 +245,11 @@ import {
     EditorState,
     ProjectData,
     variableTypeNames,
-    Settings
+    Settings,
+    windowTypes
 } from '@/structs';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, uploadFile, uuid } from '@/tools';
+import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, randFloat, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
 import Node from './Node.vue';
@@ -244,6 +267,7 @@ import SmallButton from './SmallButton.vue';
 import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
 import * as ZipJS from "@zip.js/zip.js";
+import Ranger from "./Ranger.vue";
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -256,7 +280,7 @@ onMounted(() => {
                 if (point.outElement) {
                     if (point.followingCursor) {
                         superConnect(elementCenter(point.outElement), mouse);
-                    } else if (point.inElement) {
+                    } else if (point.inElement && point.nextId) {
                         superConnectElement(point.outElement, point.inElement);
                     };
                 }
@@ -265,15 +289,15 @@ onMounted(() => {
     });
 });
 const stage = ref<HTMLCanvasElement | null>(null);
-const windowState = ref<Record<WindowType, boolean>>({
-    node: false,
-    world: false,
-    asset: false,
-    project: false,
-    variable: false,
-    about: false,
-    setting: false
-});
+const orders = ref<WindowType[]>([]);
+const positions = ref<Record<WindowType, Vector>>(windowTypes.reduce((data, type) => {
+    data[type] = Vector.ZERO;
+    return data;
+}, {} as Record<WindowType, Vector>));
+const draggings = ref<Record<WindowType, boolean>>(windowTypes.reduce((data, type) => {
+    data[type] = false;
+    return data;
+}, {} as Record<WindowType, boolean>));
 const editorState = ref(new EditorState());
 const settings = ref(new Settings());
 const project = ref(new ProjectData());
@@ -308,15 +332,21 @@ function superConnect(point1: Vector, point2: Vector) {
 }
 function superConnectElement(element1: HTMLElement, element2: HTMLElement) {
     const func = settings.value.lineType === 0 ? Drawing.straightConnectElement : Drawing.bezierConnectElement;
-    func(element1, element2);
+    func(element1, element2,);
 }
-function openWindow(type: WindowType) {
-    windowState.value[type] = true;
-};
 function createNode(type: NodeType) {
     const node: NodeScript = {
         id: uuid(),
-        position: Vector.ZERO,
+        position: new Vector(
+            settings.value.createNodeOffset - editorState.value.workspace.x + randFloat(
+                -settings.value.createNodeOffset / 2,
+                settings.value.createNodeOffset / 2
+            ),
+            settings.value.createNodeOffset - editorState.value.workspace.y + randFloat(
+                -settings.value.createNodeOffset / 2,
+                settings.value.createNodeOffset / 2
+            )
+        ),
         type,
         outPoints: [
             {
@@ -459,9 +489,45 @@ function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
         });
     }
 }
+function deleteNode(index: number) {
+    const nodeId = project.value.nodes[index].id;
+    project.value.nodes.splice(index, 1);
+    project.value.nodes.forEach(node => {
+        node.outPoints.forEach(point => {
+            if (point.nextId === nodeId) {
+                point.nextId = null;
+                point.inElement = null;
+                point.outElement = null;
+            }
+        });
+    });
+}
 window.msg = showMessage;
 window.project = project;
+window.settings = settings;
+window.state = editorState;
+window.windowOrders = orders;
+window.windowPositions = positions;
+window.windowDraggings = draggings;
+window.openWindow = (type: WindowType) => {
+    if (orders.value.includes(type)) return;
+    orders.value.push(type);
+};
+window.closeWindow = (type: WindowType) => {
+    const index = orders.value.indexOf(type);
+    if (index === -1) return;
+    orders.value.splice(index, 1);
+};
+window.moveToTop = (type: WindowType) => {
+    const index = orders.value.indexOf(type);
+    if (index === -1) return;
+    orders.value.splice(index, 1);
+    orders.value.push(type);
+};
 watch(() => project.value.nodes, checkNodeConnectionToSelf, { deep: true });
+watch(settings, (newV) => {
+    Drawing.setOffsetMulitplier(newV.curveMagnification);
+}, { deep: true });
 </script>
 <style>
 * {
@@ -576,6 +642,7 @@ textarea:focus {
 
 .message.warn {
     background-color: orange;
+
 }
 
 .message.error {
@@ -606,6 +673,10 @@ textarea:focus {
 
 .margin5-left {
     margin-left: 5px;
+}
+
+.margin-auto-left {
+    margin-left: auto !important;
 }
 
 .thanks {
