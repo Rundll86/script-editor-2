@@ -124,6 +124,7 @@ export class EditorState {
 }
 export class Settings {
     lineType: number = 0; // 0: straight, 1: curved
+    lineLayer: number = 0; // 0: above node, 1: below node
     canConnectToSelf: boolean = false;
     curveMagnification: number = 0.5;
     createNodeOffset: number = 100;

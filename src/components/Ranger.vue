@@ -1,9 +1,9 @@
 <template>
     <div class="container">
-        <div class="bar" ref="bar">
+        <div class="bar" ref="bar" @mousedown.prevent="startJump">
             <div class="ball" :class="{ isRanging }" :style="{
                 '--pos': `${percent * 100}%`
-            }" @mousedown.prevent="startRange">
+            }" @mousedown.prevent.stop="startRange">
                 <div class="value-bar" :class="{ isRanging }">
                     {{ (min * (mode === "percent" ? 100 : 1)).toFixed(fix) + (mode === "percent" ? "%" : "") }}
                     /
@@ -11,12 +11,18 @@
                     /
                     {{ (max * (mode === "percent" ? 100 : 1)).toFixed(fix) + (mode === "percent" ? "%" : "") }}
                 </div>
+                <div class="block external" :style="{
+                    '--progress': jumpProgress
+                }"></div>
+                <div class="block internal" :style="{
+                    '--progress': jumpProgress
+                }"></div>
             </div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
-import { limited } from '@/tools';
+import { everyFrame, limited } from '@/tools';
 import { computed, ref, watch, type PropType } from 'vue';
 const props = defineProps({
     max: {
@@ -42,6 +48,10 @@ const props = defineProps({
     mode: {
         type: String as PropType<"number" | "percent">,
         default: "number"
+    },
+    jumpTime: { //在bar上按住某个位置一段时间就把currentValue跳转到这里
+        type: Number,
+        default: 1000 //毫秒
     }
 });
 const emit = defineEmits(["update:value", "update:ranging"]);
@@ -51,20 +61,61 @@ const barLeft = computed(() => bar.value?.getBoundingClientRect().left ?? 0);
 const percent = computed(() => (currentValue.value - props.min) / (props.max - props.min));
 const currentValue = ref(props.value);
 const isRanging = ref(props.ranging);
+const isJumping = ref(false);
+const jumpProgress = ref(0);
 let offset = 0;
+let startJumpTime = 0;
+let stoper: null | (() => void) = null;
 function startRange(e: MouseEvent) {
     offset = e.clientX - (barWidth.value * percent.value + barLeft.value);
     isRanging.value = true;
-};
+}
 function updateRange(e: MouseEvent) {
     if (!isRanging.value) return;
-    currentValue.value = (e.clientX - offset - barLeft.value) / barWidth.value * (props.max - props.min) + props.min;
-};
+    setValue(e);
+}
 function endRange() {
     isRanging.value = false;
-};
+}
+function startJump(e: MouseEvent) {
+    startJumpTime = Date.now();
+    isJumping.value = true;
+    everyFrame((stop) => {
+        if (!isJumping.value) {
+            stop();
+            return;
+        };
+        jumpProgress.value = (Date.now() - startJumpTime) / props.jumpTime;
+        if (jumpProgress.value >= 1) {
+            offset = 0;
+            setValue(e, 0.1);
+            endJump();
+        };
+    });
+}
+function endJump() {
+    isJumping.value = false;
+    jumpProgress.value = 0;
+}
+function setValue(e: MouseEvent, animationRate: number = 0, deviation: number = 0.1) {
+    if (stoper) stoper();
+    const target = (e.clientX - offset - barLeft.value) / barWidth.value * (props.max - props.min) + props.min;
+    if (animationRate > 0) {
+        everyFrame((stop) => {
+            stoper = stop;
+            currentValue.value += (target - currentValue.value) * animationRate;
+            if (Math.abs(target - currentValue.value) < deviation) {
+                currentValue.value = target;
+                stop();
+            };
+        });
+    } else {
+        currentValue.value = target;
+    }
+}
 window.addEventListener("mousemove", updateRange);
 window.addEventListener("mouseup", endRange);
+window.addEventListener("mouseup", endJump);
 watch(currentValue, (newV, oldV) => {
     if (newV === oldV) return;
     currentValue.value = limited(props.min, newV, props.max);
@@ -93,8 +144,7 @@ watch(() => props.max, (newV, oldV) => {
 </script>
 <style scoped>
 .container {
-    height: 10px;
-    padding-top: 5px;
+    padding: 6px 0;
 }
 
 .value-bar {
@@ -103,7 +153,7 @@ watch(() => props.max, (newV, oldV) => {
     left: 50%;
     background-color: transparent;
     z-index: 1;
-    transform: scale(0) rotate(-45deg) translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(0) rotate(-45deg);
     text-wrap-mode: nowrap;
     padding: 2px 4px;
     border-radius: 5px;
@@ -156,6 +206,26 @@ watch(() => props.max, (newV, oldV) => {
     opacity: 0;
     border: 1px solid rgb(120, 120, 120);
     transition: all .2s ease-out;
+}
+
+.block {
+    --progress: 0;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    opacity: calc(var(--progress));
+}
+
+.block.internal {
+    background-color: rgba(255, 255, 255, 0.8);
+    transform: translate(-50%, -50%) rotate(0deg) scale(var(--progress));
+}
+
+.block.external {
+    background-color: rgba(0, 0, 0, 0.2);
+    transform: translate(-50%, -50%) rotate(calc(180deg * var(--progress))) scale(calc(3 - var(--progress) * 2));
 }
 
 .ball:hover::before {

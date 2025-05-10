@@ -77,10 +77,10 @@ export function keyMapper<K extends string[], V extends string[]>(keys: K, value
     return result;
 };
 export function unused<T>(data: T): T { return data; };
-export function everyFrame(executor: (stop: () => void) => void) {
-    function loop() {
+export async function everyFrame(executor: (stop: () => boolean) => void | Promise<void>) {
+    async function loop() {
         let keep = true;
-        executor(() => keep = false);
+        await executor(() => keep = false);
         if (!keep) return;
         requestAnimationFrame(loop);
     };

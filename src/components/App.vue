@@ -6,7 +6,7 @@
             <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
                 <Node v-for="node, index in project.nodes" :key="node.id" @delete="deleteNode(index)" :data="node"
-                    :project="project" :settings="settings" />
+                    :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </Draggable>
         </Layer>
@@ -210,6 +210,9 @@
                             <Ranger :mode="'percent'" :fix="2" :min="-0.5" :max="1.5"
                                 v-model:value="settings.curveMagnification" />
                         </div>
+                        <br v-else>
+                        线条绘制层：
+                        <Selector v-model:selected="settings.lineLayer" :options="['前景', '背景']" />
                     </Frame>
                     <Frame title="节点">
                         节点是否可连接到自身？
@@ -501,6 +504,11 @@ function deleteNode(index: number) {
             }
         });
     });
+}
+function moveNodeToFirst(index: number) {
+    const node = project.value.nodes[index];
+    project.value.nodes.splice(index, 1);
+    project.value.nodes.push(node);
 }
 window.msg = showMessage;
 window.project = project;
