@@ -12,6 +12,7 @@ declare global {
         openWindow(target: WindowType): void;
         closeWindow(target: WindowType): void;
         moveToTop(target: WindowType): void;
+        dragToZero(target: WindowType): void;
     }
 }
 declare module "vue" {

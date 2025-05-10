@@ -524,6 +524,9 @@ window.moveToTop = (type: WindowType) => {
     orders.value.splice(index, 1);
     orders.value.push(type);
 };
+window.dragToZero = (type: WindowType) => {
+    positions.value[type] = Vector.ZERO;
+};
 watch(() => project.value.nodes, checkNodeConnectionToSelf, { deep: true });
 watch(settings, (newV) => {
     Drawing.setOffsetMulitplier(newV.curveMagnification);

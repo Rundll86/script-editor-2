@@ -1,13 +1,15 @@
 <template>
     <div class="nav">
         <Logo />
-        <SmallButton @click="window.openWindow('node')">🎞️节点</SmallButton>
-        <SmallButton @click="window.openWindow('world')">🌍世界观</SmallButton>
-        <SmallButton @click="window.openWindow('asset')">📦资源</SmallButton>
-        <SmallButton @click="window.openWindow('variable')">📜变量</SmallButton>
-        <SmallButton class="end" @click="window.openWindow('project')">🗂️项目</SmallButton>
-        <SmallButton @click="window.openWindow('setting')">⚙️设置</SmallButton>
-        <SmallButton @click="window.openWindow('about')">🧿关于</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('node')" @click="window.openWindow('node')">🎞️节点</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('world')" @click="window.openWindow('world')">🌍世界观</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('asset')" @click="window.openWindow('asset')">📦资源</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('variable')" @click="window.openWindow('variable')">📜变量</SmallButton>
+        <SmallButton class="end" @dblclick="window.dragToZero('project')" @click="window.openWindow('project')">
+            🗂️项目
+        </SmallButton>
+        <SmallButton @dblclick="window.dragToZero('setting')" @click="window.openWindow('setting')">⚙️设置</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('about')" @click="window.openWindow('about')">🧿关于</SmallButton>
     </div>
 </template>
 <script setup lang="ts">
