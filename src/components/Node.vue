@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, type ComputedRef, type PropType } from 'vue';
 import type { Asset, NodeScript, ProjectData, Settings } from '@/structs';
-import { nodeTypeNames, nodeTypes } from "@/structs";
+import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
 import Draggable from './Draggable.vue';
 import Selector from './Selector.vue';
 import CirclePoint from './CirclePoint.vue';
@@ -73,13 +73,7 @@ const previewText = computed(() => {
 });
 const isEntry = computed(() => project.entryNode === data.id);
 function createOutPoint() {
-    data.outPoints.push({
-        label: "",
-        outElement: null,
-        inElement: null,
-        nextId: null,
-        followingCursor: false,
-    });
+    data.outPoints.push(new OutPoint());
 };
 function isElementValidInPoint(element: Element | EventTarget | null): element is HTMLElement & { dataset: { node: string, point: "in" } } {
     return !!(
@@ -113,7 +107,6 @@ window.addEventListener("mouseup", endConnect);
     <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node">
         <div class="titlebar" data-region="true">
             <CirclePoint :data-node="data.id" data-point="in" />
-            {{ isEntry ? "◈" : "" }}
             {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}
             <SquareButton @click="$emit('delete')">🗑️</SquareButton>
             <SquareButton class="margin-auto-left" @click="project.entryNode = data.id">

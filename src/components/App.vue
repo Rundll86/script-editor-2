@@ -213,7 +213,7 @@
                             @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
                         <br>
                         创建节点偏移：<br>
-                        <Ranger :max="window.innerHeight / 2" v-model:value="settings.createNodeOffset" />
+                        <Ranger :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </Frame>
                 </Window>
             </div>
@@ -246,11 +246,10 @@ import {
     windowTypes,
     Character,
     Noun,
-    Asset,
-    OutPoint
+    Asset
 } from '@/structs';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, randFloat, uploadFile, uuid } from '@/tools';
+import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, offset, randFloat, uploadFile, uuid } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
 import Node from './Node.vue';
@@ -332,6 +331,7 @@ function superConnectElement(element1: HTMLElement, element2: HTMLElement) {
 }
 function createNode(type: NodeType) {
     const node: NodeScript = new NodeScript(uuid(), type);
+    node.position = new Vector(offset(settings.value.createNodeOffset), offset(settings.value.createNodeOffset));
     project.value.nodes.push(node);
 }
 function deleteSelfMessage(index: number) {

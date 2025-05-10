@@ -309,4 +309,7 @@ export function base64ToArrayBuffer(base64: string) {
 export const unknownImageURL = createObjectURL(unknownImage);
 export function limited(min: number, value: number, max: number) {
     return Math.min(Math.max(value, min), max);
-};
+}
+export function offset(value: number, rate: number = 0.5) {
+    return value * randFloat(1 - rate, 1 + rate);
+}
