@@ -1,8 +1,9 @@
 <template>
-    <div class="draggable" :style="{
+    <div class="draggable" :class="{ isDragging }" :style="{
         left: x + 'px',
         top: y + 'px',
         '--region': regionStyle,
+        '--region-drag': regionDragStyle
     }" @mousedown="startDrag">
         <slot></slot>
     </div>
@@ -30,6 +31,10 @@ const props = defineProps({
         default: false
     },
     regionStyle: {
+        type: String,
+        default: "move"
+    },
+    regionDragStyle: {
         type: String,
         default: "move"
     }
@@ -88,6 +93,7 @@ watch(isDragging, (newDragging) => {
 <style scoped>
 .draggable {
     --region: move;
+    --region-drag: move;
     position: absolute;
     transition: none;
 }
@@ -95,5 +101,9 @@ watch(isDragging, (newDragging) => {
 .draggable:deep([data-region=true]) {
     user-select: none;
     cursor: var(--region);
+}
+
+.draggable.isDragging:deep([data-region=true]) {
+    cursor: var(--region-drag);
 }
 </style>

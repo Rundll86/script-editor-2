@@ -3,7 +3,7 @@
         connecting: project.nodes.some(node => node.outPoints.some(point => point.followingCursor))
     }">
         <Layer :priority="-1">
-            <Draggable region-style="grab" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
+            <Draggable region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
                 <Node v-for="node, index in project.nodes" :key="node.id" @delete="deleteNode(index)" :data="node"
                     :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
