@@ -1,5 +1,4 @@
 import { uuid } from "./tools";
-
 export type WindowType = typeof windowTypes[number];
 export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
@@ -9,6 +8,9 @@ export class Vector {
     constructor(public x: number, public y: number) { }
     static get ZERO() {
         return new Vector(0, 0);
+    }
+    static create(size: number = 0) {
+        return new Vector(size, size);
     }
 }
 export class Configurable {
@@ -102,7 +104,9 @@ export class ProjectData extends Configurable {
     constructor() {
         super();
         this.name = "Unnamed Project";
-        this.nodes = [new NodeScript(uuid(), "talk")];
+        this.nodes = [new NodeScript(uuid(), "talk").self(node => {
+            node.position = new Vector(100, 100);
+        })];
         this.feelings = [
             "😊喜悦",
             "😡愤怒",
