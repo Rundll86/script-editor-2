@@ -3,7 +3,8 @@
         connecting: project.nodes.some(node => node.outPoints.some(point => point.followingCursor))
     }">
         <Layer :priority="-1">
-            <Draggable region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x" v-model:y="editorState.workspace.y">
+            <Draggable region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
+                v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
                 <Node v-for="node, index in project.nodes" :key="node.id" @delete="deleteNode(index)" :data="node"
                     :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
@@ -12,7 +13,7 @@
         </Layer>
         <Navbar />
         <Layer :priority="0">
-            <div v-for="target in orders" class="bus">
+            <div :key="target" v-for="target in orders" class="bus">
                 <Window v-if="target === 'node'" :id="'node'" title="节点管理">
                     <Frame title="新建节点">
                         选择一个节点类型：
@@ -249,7 +250,16 @@ import {
     Asset
 } from '@/structs';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
-import { arrayBufferToBase64, base64ToArrayBuffer, downloadFile, Drawing, elementCenter, everyFrame, offset, randFloat, uploadFile, uuid } from '@/tools';
+import {
+    arrayBufferToBase64,
+    base64ToArrayBuffer,
+    downloadFile,
+    Drawing,
+    elementCenter,
+    everyFrame, offset,
+    uploadFile,
+    uuid
+} from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
 import Node from './Node.vue';

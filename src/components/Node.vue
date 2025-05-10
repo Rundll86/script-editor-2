@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type ComputedRef, type PropType } from 'vue';
-import type { Asset, NodeScript, ProjectData, Settings } from '@/structs';
+import type { Asset, NodeScript, ProjectData } from '@/structs';
 import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
 import Draggable from './Draggable.vue';
 import Selector from './Selector.vue';
@@ -13,7 +13,7 @@ import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
 import Frame from './Frame.vue';
-const { data, project, settings } = defineProps({
+const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
         required: true,
@@ -21,10 +21,6 @@ const { data, project, settings } = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
         required: true,
-    },
-    settings: {
-        type: Object as PropType<Settings>,
-        required: true
     }
 });
 const connecting = ref(false);
