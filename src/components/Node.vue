@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, type ComputedRef, type PropType } from 'vue';
-import type { Asset, NodeScript, ProjectData } from '@/structs';
+import type { Asset, NodeScript, NormalizedNoun, ProjectData } from '@/structs';
 import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
 import Draggable from './Draggable.vue';
 import Selector from './Selector.vue';
@@ -40,31 +40,17 @@ const nounSpliter = new RegExp(`[${allowedSeparators.split("").map(char => "\\" 
 const centerd = `\\w+${nounSpliter.source}\\s*\\d+\\s*`;
 const nounMatcher = new RegExp(allowedPairs.map(pair => `(\\${pair[0]}${centerd}\\${pair[1]})`).join("|"), "g");
 const unknownNounTip = "▸未知名词，请在「世界观」选项卡设置◂";
-const nouns: ComputedRef<{
-    refer: string;
-    callIndex: number;
-    callName: string;
-    calls: string[];
-}[]> = computed(() => {
+const nouns: ComputedRef<NormalizedNoun[]> = computed(() => {
     const matches = [...data.message?.match(nounMatcher) ?? []];
-    return matches.map(match => {
-        const data = match.slice(1, -1).split(nounSpliter);
-        const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
-        const calls = project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls;
-        return {
-            refer,
-            callIndex: index,
-            callName: calls?.[index] ?? unknownNounTip,
-            calls: calls ?? []
-        };
-    }).filter(item => project.nouns.some(nounSrc => nounSrc.refer === item.refer));
+    return matches
+        .map(normalizeNoun)
+        .filter(item => project.nouns.some(nounSrc => nounSrc.refer === item.refer));
 });
 const previewText = computed(() => {
     return data.message?.replace(nounMatcher, match => {
-        const data = match.slice(1, -1).split(nounSpliter);
-        const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
-        if (!project.nouns.some(nounSrc => nounSrc.refer === refer)) return match;
-        return project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls[index] ?? unknownNounTip;
+        const normalized = normalizeNoun(match);
+        if (!project.nouns.some(nounSrc => nounSrc.refer === normalized.refer)) return `◈${match}`;
+        return normalized.callName;
     }) ?? "";
 });
 const isEntry = computed(() => project.entryNode === data.id);
@@ -96,6 +82,35 @@ function endConnect(e: MouseEvent) {
     }
     connectingPoint.value.followingCursor = false;
     connecting.value = false;
+};
+function normalizeNoun(matchText: string): NormalizedNoun {
+    const data = matchText.slice(1, -1).split(nounSpliter);
+    const [refer, index] = [data[0].trim(), Number(data[1]) - 1];
+    const calls = project.nouns.find(nounSrc => nounSrc.refer === refer)?.calls;
+    return {
+        refer,
+        callIndex: index,
+        callName: calls?.[index] ?? unknownNounTip,
+        calls: calls ?? [],
+        scopePair: `${matchText[0]}${matchText[matchText.length - 1]}`,
+        separator: matchText.match(nounSpliter)?.[0] ?? ":"
+    };
+};
+function compileNoun(normalized: NormalizedNoun): string {
+    return `${normalized.scopePair[0]}${normalized.refer}${normalized.separator}${normalized.callIndex + 1}${normalized.scopePair[1]}`;
+};
+function updateNounIndex(refer: string, newIndex: number, targetIndex: number) {
+    let count = -1;
+    data.message = data.message?.replace(nounMatcher, match => {
+        count++;
+        if (targetIndex !== count) return match;
+        const normalized = normalizeNoun(match);
+        if (normalized.refer !== refer) return match;
+        else {
+            normalized.callIndex = newIndex;
+            return compileNoun(normalized);
+        }
+    });
 };
 window.addEventListener("mouseup", endConnect);
 </script>
@@ -149,15 +164,16 @@ window.addEventListener("mouseup", endConnect);
                 内容：
                 <textarea v-model="data.message"></textarea>
                 <Frame title="专有名词" v-if="nouns.length > 0">
-                    <Resizable>
+                    <Resizable :width="200" :height="50">
                         <Frame class="preview-text" title="">{{ previewText }}</Frame>
                     </Resizable>
                     <div :key="index" v-for="noun, index in nouns">
                         {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：
                         <span class="margin5-left" :class="{
                             'underlined': i === noun.callIndex,
-                            'bolded': i === noun.callIndex
-                        }" :key="i" v-for="call, i in noun.calls">
+                            'bolded': i === noun.callIndex,
+                            'text-button': i !== noun.callIndex
+                        }" :key="i" v-for="call, i in noun.calls" @click="updateNounIndex(noun.refer, i, index)">
                             {{ call }}
                         </span>
                     </div>
@@ -262,5 +278,7 @@ window.addEventListener("mouseup", endConnect);
 .preview-text {
     text-wrap-mode: wrap;
     overflow: hidden;
+    width: 100%;
+    height: 100%;
 }
 </style>

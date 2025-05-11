@@ -4,6 +4,14 @@ export const windowTypes = ["node", "world", "asset", "project", "variable", "ab
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"];
 export type NodeType = typeof nodeTypes[number];
+export interface NormalizedNoun {
+    refer: string;
+    callIndex: number;
+    callName: string;
+    calls: string[];
+    scopePair: string;
+    separator: string;
+}
 export class Vector {
     constructor(public x: number, public y: number) { }
     static get ZERO() {

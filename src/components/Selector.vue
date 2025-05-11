@@ -99,6 +99,7 @@ onUnmounted(() => {
     display: flex;
     gap: 5px;
     border-radius: 5px;
+    cursor: pointer;
 }
 
 .current:hover {
@@ -138,6 +139,7 @@ onUnmounted(() => {
     padding: 2px 4px;
     display: flex;
     justify-content: center;
+    cursor: pointer;
 }
 
 .option:hover {

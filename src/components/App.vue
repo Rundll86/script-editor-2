@@ -665,6 +665,10 @@ textarea:focus {
     display: inline-block;
 }
 
+button {
+    cursor: pointer;
+}
+
 a:link,
 a:visited {
     color: black;
@@ -679,6 +683,22 @@ a:hover {
 a:active {
     color: gray;
     text-decoration: underline;
+}
+
+.text-button {
+    cursor: pointer;
+    color: black;
+    text-decoration: none;
+}
+
+.text-button:hover {
+    color: gray;
+    text-decoration: underline;
+}
+
+.text-button:active {
+    color: gray;
+    text-decoration: none;
 }
 
 .underlined {

@@ -17,8 +17,8 @@ defineProps({
         v-model:y="window.windowPositions.value[id].y" class="window">
         <div class="titlebar" data-region="true">
             {{ title }}
-            <SquareButton style="margin: 0 0 0 auto;" @click="window.closeWindow(id)">×</SquareButton>
-            <SquareButton style="margin: 0 0 0 5px;" @click="window.moveToTop(id)">↥</SquareButton>
+            <SquareButton style="margin: 0 0 0 auto;" @click="window.moveToTop(id)">↥</SquareButton>
+            <SquareButton style="margin: 0 0 0 5px;" @click="window.closeWindow(id)">×</SquareButton>
         </div>
         <Resizable :enable="false" class="content">
             <slot></slot>
