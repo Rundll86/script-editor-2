@@ -432,7 +432,7 @@ async function compile() {
     });
     projectData.assets.forEach((asset, index) => {
         if (asset.data instanceof ArrayBuffer && asset.type === "video" || asset.type === "image") {
-            outputer.add(`${index}.${asset.type}`, new ZipJS.BlobReader(new Blob([asset.data ?? new TextEncoder().encode("").buffer])));
+            outputer.add(`${index}.${asset.type}`, new ZipJS.BlobReader(new Blob([(asset.data ?? new TextEncoder().encode("").buffer) as ArrayBuffer])));
         } else if (asset.type === "script") {
             console.log("..");
             outputer.add(`${index}.${asset.type}`, new ZipJS.TextReader(asset.name));

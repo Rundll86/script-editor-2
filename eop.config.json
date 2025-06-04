@@ -1,0 +1,27 @@
+{
+    "project": {
+        "name": "script-editor-2",
+        "version": "1.2.0",
+        "entry": "dist/desktop.js",
+        "files": [],
+        "dirs": [
+            "dist"
+        ],
+        "excludes": []
+    },
+    "build": {
+        "temp": "temp",
+        "clean": false,
+        "nodeModules": [
+            "type-electron"
+        ],
+        "showTime": false,
+        "showConsole": false,
+        "showEntryInfo": true,
+        "icon": "public/favicon.ico"
+    },
+    "electron": {
+        "home": "electron",
+        "bin": "electron.exe"
+    }
+}
