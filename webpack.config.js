@@ -43,6 +43,9 @@ module.exports = {
         extensions: [".ts", ".js"],
         alias: {
             "@": path.resolve(__dirname, "src")
+        },
+        fallback: {
+            url: false
         }
     },
     plugins: [

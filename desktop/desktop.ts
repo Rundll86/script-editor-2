@@ -1,4 +1,4 @@
-import { app, BrowserWindow, Menu } from "type-electron";
+import { app, BrowserWindow, ipcMain, Menu } from "type-electron";
 import path from "path";
 import process from "process";
 app.addListener("window-all-closed", () => app.quit());
@@ -8,7 +8,8 @@ app.whenReady().then(() => {
         width: 1280,
         height: 720,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            preload: path.resolve("generated", "preload.js")
         },
         icon: path.resolve("generated", "favicon.ico")
     });
@@ -17,6 +18,8 @@ app.whenReady().then(() => {
     } else {
         mainWindow.loadURL("http://localhost:25565");
     }
-    mainWindow.webContents.openDevTools();
     Menu.setApplicationMenu(null);
+    ipcMain.on("toggleDevTools", () => {
+        mainWindow.webContents.toggleDevTools();
+    });
 });

@@ -9,7 +9,8 @@
         "build:desktop": "tsc --project tsconfig.native.json",
         "dev": "run-p dev:*",
         "build": "run-p build:*",
-        "dist": "eop build",
+        "dist": "run-s build dist-only",
+        "dist-only": "eop build",
         "type-check": "tsc --noEmit",
         "lint": "eslint . --fix",
         "start": "eop start"
