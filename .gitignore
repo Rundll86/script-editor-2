@@ -2,6 +2,7 @@ node_modules
 obj
 bin
 dist
+generated
 build
 archive
 electron

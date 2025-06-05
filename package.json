@@ -2,12 +2,14 @@
     "name": "script-editor-2",
     "version": "1.2.0",
     "private": true,
-    "main": "dist/script-editor.js",
     "scripts": {
         "dev:front": "webpack serve --mode development",
         "build:front": "webpack --mode production",
         "dev:desktop": "tsc --project tsconfig.native.json --watch",
-        "build:desktop": "eop build",
+        "build:desktop": "tsc --project tsconfig.native.json",
+        "dev": "run-p dev:*",
+        "build": "run-p build:*",
+        "dist": "eop build",
         "type-check": "tsc --noEmit",
         "lint": "eslint . --fix",
         "start": "eop start"

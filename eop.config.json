@@ -2,16 +2,16 @@
     "project": {
         "name": "script-editor-2",
         "version": "1.2.0",
-        "entry": "dist/desktop.js",
+        "entry": "generated/desktop.js",
         "files": [],
         "dirs": [
-            "dist"
+            "generated"
         ],
         "excludes": []
     },
     "build": {
         "temp": "temp",
-        "clean": false,
+        "clean": true,
         "nodeModules": [
             "type-electron"
         ],

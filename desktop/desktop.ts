@@ -10,11 +10,10 @@ app.whenReady().then(() => {
         webPreferences: {
             nodeIntegration: true
         },
-        icon: path.resolve(__dirname, "favicon.ico")
+        icon: path.resolve("generated", "favicon.ico")
     });
     if (process.env.isPackaged) {
-        mainWindow.loadFile(path.resolve(__dirname, "index.html"));
-        1;
+        mainWindow.loadFile(path.resolve("generated", "index.html"));
     } else {
         mainWindow.loadURL("http://localhost:25565");
     }
