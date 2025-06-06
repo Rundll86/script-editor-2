@@ -3,7 +3,9 @@
         "name": "script-editor-2",
         "version": "1.2.0",
         "entry": "generated/desktop.js",
-        "files": [],
+        "files": [
+            "generated/utils.js"
+        ],
         "dirs": [
             "generated"
         ],
@@ -16,7 +18,7 @@
             "type-electron"
         ],
         "showTime": false,
-        "showConsole": false,
+        "showConsole": true,
         "showEntryInfo": true,
         "icon": "public/favicon.ico"
     },

@@ -1,22 +1,25 @@
 import { app, BrowserWindow, ipcMain, Menu } from "type-electron";
-import path from "path";
 import process from "process";
+import { isDevelopment, resolveFilePath } from "./utils";
 app.addListener("window-all-closed", () => app.quit());
 app.whenReady().then(() => {
+    if (!isDevelopment) {
+        process.chdir("./generated")
+    }
     const mainWindow = new BrowserWindow({
         title: "Loading",
         width: 1280,
         height: 720,
         webPreferences: {
             nodeIntegration: true,
-            preload: path.resolve("generated", "preload.js")
+            preload: resolveFilePath("preload.js")
         },
-        icon: path.resolve("generated", "favicon.ico")
+        icon: resolveFilePath("favicon.ico")
     });
-    if (process.env.isPackaged) {
-        mainWindow.loadFile(path.resolve("generated", "index.html"));
-    } else {
+    if (isDevelopment) {
         mainWindow.loadURL("http://localhost:25565");
+    } else {
+        mainWindow.loadFile(resolveFilePath("index.html"));
     }
     Menu.setApplicationMenu(null);
     ipcMain.on("toggleDevTools", () => {

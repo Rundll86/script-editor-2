@@ -154,7 +154,7 @@
                             仓库
                         </div>
                         <div class="inline-left margin5">
-                            <b>Vue+Vite</b><br>
+                            <b>Vue+Webpack</b><br>
                             <b>MIT</b><br>
                             <a href="https://github.com/Rundll86/script-editor-2" target="_blank">
                                 <b>Github</b>

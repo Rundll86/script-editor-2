@@ -1,6 +1,6 @@
 <template>
     <div class="root">
-        <img :src="$withBase(`./users/${name}.jpg`)" :class="{
+        <img :src="$withBase(`users/${name}.jpg`)" :class="{
             avatar: true,
             border: withBorder
         }">
