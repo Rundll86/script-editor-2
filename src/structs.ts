@@ -178,4 +178,5 @@ export class Settings extends Configurable {
     canConnectToSelf: boolean = false;
     curveMagnification: number = 0.5;
     createNodeOffset: number = 100;
+    apikey: string = "";
 }

@@ -6,7 +6,7 @@
 <style scoped>
 button {
     background-color: rgba(0, 0, 0, 0.05);
-    display: flex;
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     padding: 3px 5px;

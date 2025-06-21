@@ -216,6 +216,11 @@
                         创建节点偏移：<br>
                         <Ranger :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </Frame>
+                    <Frame title="AI">
+                        智谱清言 API Key：
+                        <input v-model="settings.apikey">
+                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
+                    </Frame>
                 </Window>
             </div>
         </Layer>
@@ -278,6 +283,7 @@ import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
 import * as ZipJS from "@zip.js/zip.js";
 import Ranger from "./Ranger.vue";
+import { ZhipuAI } from "zhipuai";
 onMounted(() => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -312,13 +318,13 @@ const editorState = ref(new EditorState());
 const settings = ref(new Settings());
 const project = ref(new ProjectData());
 const images = computed(() => {
-    return project.value.assets.filter(e => e.type === 'image');
+    return project.value.assets.filter(e => e.type === "image");
 });
 const videos = computed(() => {
-    return project.value.assets.filter(e => e.type === 'video');
+    return project.value.assets.filter(e => e.type === "video");
 });
 const scripts = computed(() => {
-    return project.value.assets.filter(e => e.type === 'script');
+    return project.value.assets.filter(e => e.type === "script");
 });
 const feelingsObject = () => {
     return project.value.feelings.reduce((data, _, i) => {
@@ -353,17 +359,17 @@ function showMessage(type: MessageType, data: string) {
 async function createImage() {
     const files = await uploadFile("image/*", false);
     files.forEach(file => {
-        project.value.assets.push(new Asset(file.filename, 'image', file));
+        project.value.assets.push(new Asset(file.filename, "image", file));
     });
 }
 async function createVideo() {
     const files = await uploadFile("video/*", false);
     files.forEach(file => {
-        project.value.assets.push(new Asset(file.filename, 'video', file));
+        project.value.assets.push(new Asset(file.filename, "video", file));
     });
 }
 async function createVariable() {
-    project.value.variables.push(new Variable('', 0));
+    project.value.variables.push(new Variable("", 0));
     editorState.value.varName = "";
 }
 async function saveData() {
@@ -447,6 +453,31 @@ async function compile() {
     const arrayBuffer = await buffer.arrayBuffer();
     if (editorState.value.exporter.outputFormat === 1) return arrayBufferToBase64(arrayBuffer);
     else return arrayBuffer;
+}
+async function checkAPIKey() {
+    try {
+        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
+            headers: {
+                "Authorization": `Bearer ${settings.value.apikey}`,
+                "Content-Type": "application/json"
+            },
+            method: "post",
+            body: JSON.stringify({
+                messages: [
+                    {
+                        role: "user",
+                        content: "你好"
+                    }
+                ],
+                model: "glm-4-flash-250414"
+            })
+        }).then((res) => res.json());
+        if (response.error) {
+            window.msg("error", `${response.error.code}：${response.error.message}`);
+        } else {
+            window.msg("info", "API Key验证成功！");
+        }
+    } catch (error) { }
 }
 function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
     if (!settings.value.canConnectToSelf) {

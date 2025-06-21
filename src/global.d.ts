@@ -14,6 +14,9 @@ declare global {
         moveToTop(target: WindowType): void;
         dragToZero(target: WindowType): void;
     }
+    declare interface ObjectConstructor {
+        hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, any>;
+    }
 }
 declare module "vue" {
     export interface ComponentCustomProperties {
