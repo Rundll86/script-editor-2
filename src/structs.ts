@@ -1,6 +1,7 @@
-import { uuid } from "./tools";
+import { OpenAIProtocol, uuid } from "./tools";
+import prompt from "./prompt.txt";
 export type WindowType = typeof windowTypes[number];
-export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting"] as const;
+export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting", "ai"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"];
 export type NodeType = typeof nodeTypes[number];
@@ -117,9 +118,7 @@ export class ProjectData extends Configurable {
     constructor() {
         super();
         this.name = "Unnamed Project";
-        this.nodes = [new NodeScript(uuid(), "talk").self(node => {
-            node.position = new Vector(100, 100);
-        })];
+        this.nodes = [];
         this.feelings = [
             "😊喜悦",
             "😡愤怒",
@@ -129,7 +128,10 @@ export class ProjectData extends Configurable {
             "🤢厌恶",
             "🔥欲望"
         ];
-        this.characters = [new Character("Character A", this.feelingsDesciptor)];
+        this.characters = [
+            new Character("Character A", this.feelingsDesciptor),
+            new Character("Character B", this.feelingsDesciptor)
+        ];
         this.nouns = [
             new Noun().self(noun => { noun.refer = "apple"; noun.calls = ["苹果", "智慧果"] }),
             new Noun().self(noun => { noun.refer = "orange"; noun.calls = ["橘子", "柑橘"] }),
@@ -171,14 +173,17 @@ export class EditorState extends Configurable {
     varName: string = "";
     varType: number = 0;
     exporter: ExporterState = new ExporterState();
+    conversation: OpenAIProtocol.MessageContext[] = [];
+    askingMessage: string = "帮我写个对话";
+    responsing: boolean = false;
 }
 export class Settings extends Configurable {
-    lineType: number = 0; // 0: straight, 1: curved
+    lineType: number = 1; // 0: straight, 1: curved
     lineLayer: number = 0; // 0: above node, 1: below node
     canConnectToSelf: boolean = false;
     curveMagnification: number = 0.5;
     createNodeOffset: number = 100;
-    zhipuApiKey: string = "";
+    zhipuApiKey: string = "ebfac6d80c474fcfbf6b56a5232db129.5nWBwCuNnHwL1Pk2";
     deepseekApiKey: string = "";
     currentAI: number = 0; // 0: zhipu, 1: deepseek
 }

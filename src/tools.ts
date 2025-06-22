@@ -315,14 +315,16 @@ export namespace Markdown {
         return [...html.querySelectorAll(selector)].map(e => e.innerHTML);
     }
 }
+export namespace XML {
+    export function filter(xml: string, selector: string) {
+        const html = document.createElement("div");
+        html.innerHTML = xml;
+        return [...html.querySelectorAll(selector)].map(e => e.innerHTML);
+    }
+}
 export namespace OpenAIProtocol {
-    let service: AIService = {
-        key: "",
-        model: "",
-        endPoint: ""
-    };
-    interface MessageContext {
-        role: "user" | "assistant" | "system";
+    export interface MessageContext {
+        role: Roles;
         content: string;
     }
     interface ResponseCallback {
@@ -334,50 +336,67 @@ export namespace OpenAIProtocol {
         model: string;
         endPoint: string;
     }
-    type ResponseCallbackFunction = (data: ResponseCallback) => void;
+    type ResponseCallbackFunction = (data: ResponseCallback) => void | Promise<void>;
     type AIServicePart = Partial<AIService>;
+    type Roles = "assistant" | "user" | "system";
+    let service: AIService = {
+        key: "",
+        model: "",
+        endPoint: ""
+    };
     function getAuthorization() {
         return `Bearer ${service.key}`;
     }
-    function parseStreamChunk(chunk: any) {
-        return JSON.parse(chunk.toString().slice(6));
+    function parseStreamChunk(chunk: any): { choices: { delta: { role: Roles, content: string } }[] } {
+        const splited: string[] = chunk.split(/[\n\r]/).map((s: string) => s.slice(6)).filter(Boolean).filter((e: string) => e !== "[DONE]");
+        try {
+            return splited.map(e => JSON.parse(e)).reduce((prev, cur) => {
+                prev.choices[0].delta.content += cur.choices[0].delta.content;
+                return prev;
+            }, { choices: [{ delta: { role: "assistant", content: "" } }] });
+        } catch (e: any) {
+            console.log(chunk, e);
+            return { choices: [{ delta: { role: "assistant", content: "" } }] };
+        }
     }
     async function request(context: MessageContext[], stream: true, callback: ResponseCallbackFunction): Promise<string>;
     async function request(context: MessageContext[], stream: false): Promise<string>;
     async function request(context: MessageContext[], stream: boolean, callback?: ResponseCallbackFunction): Promise<string> {
-        const response = await axios.post(service.endPoint, JSON.stringify({
-            messages: context,
-            model: service.model,
-            stream
-        }), {
+        const response = await fetch(`${service.endPoint}?random=${Math.random()}`, {
+            method: "POST",
             headers: {
                 "Authorization": getAuthorization(),
                 "Content-Type": "application/json"
             },
-            method: "post",
-            responseType: stream ? "stream" : "json"
+            body: JSON.stringify({ messages: context, model: service.model, stream })
         });
-        if (response.data.error) {
-            throw new AxiosError(response.data.error.message, response.data.error.code);
-        }
         if (stream) {
+            const reader = response.body?.getReader();
             let result = "";
-            response.data.on("data", (chunk: string) => {
-                const { content } = parseStreamChunk(chunk).choices[0];
-                result += content;
-                callback!({
-                    message: content,
-                    finished: false
-                });
-            });
-            return new Promise(resolve => {
-                response.data.on("end", () => callback!({
-                    message: result,
-                    finished: true
-                }));
-                resolve(result);
-            });
-        } else return response.data;
+            if (reader) {
+                let finished;
+                while (!finished) {
+                    const { done, value } = await reader.read();
+                    finished = done;
+                    if (finished) {
+                        await callback!({
+                            message: result,
+                            finished: true
+                        });
+                        break;
+                    }
+                    const text = new TextDecoder().decode(value);
+                    const data = parseStreamChunk(text);
+                    const { content } = data.choices[0].delta;
+                    result += content;
+                    await callback!({
+                        message: content,
+                        finished: false
+                    });
+                }
+            }
+            return result;
+        } else return await response.text();
     }
     export namespace PresetServices {
         export const Zhipu: AIServicePart = {

@@ -19,6 +19,7 @@
         "@zip.js/zip.js": "^2.7.60",
         "axios": "^1.10.0",
         "crypto-js": "^4.2.0",
+        "highlight.js": "^11.11.1",
         "jszip": "^3.10.1",
         "marked": "^15.0.12",
         "typescript": "^5.8.3",
