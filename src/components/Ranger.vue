@@ -154,7 +154,7 @@ watch(() => props.max, (newV, oldV) => {
     background-color: transparent;
     z-index: 1;
     transform: translate(-50%, -50%) scale(0) rotate(-45deg);
-    text-wrap-mode: nowrap;
+    text-wrap: nowrap;
     padding: 2px 4px;
     border-radius: 5px;
     transition: all .2s ease-out;

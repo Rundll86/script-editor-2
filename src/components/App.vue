@@ -638,7 +638,7 @@ body {
 }
 
 textarea {
-    text-wrap-mode: wrap !important;
+    text-wrap: wrap !important;
 }
 
 input,
