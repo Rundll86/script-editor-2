@@ -6,7 +6,8 @@
             <Draggable region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
                 v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <Node v-for="node, index in project.nodes" :key="node.id" @delete="deleteNode(index)" :data="node"
+                <Node v-for="node, index in project.nodes" :key="node.id"
+                    @delete="window.keyboard.shift ? deleteNodeAndChildren(index) : deleteNode(index)" :data="node"
                     :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </Draggable>
@@ -276,7 +277,8 @@ import {
     uploadFile,
     uuid,
     OpenAIProtocol,
-    XML
+    XML,
+    NodeState
 } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
@@ -571,6 +573,12 @@ function deleteNode(index: number) {
             }
         });
     });
+}
+function deleteNodeAndChildren(index: number) {
+    const node = project.value.nodes[index];
+    const children = NodeState.getChildren(node, project.value);
+    children.forEach(child => deleteNodeAndChildren(project.value.nodes.indexOf(child)));
+    deleteNode(project.value.nodes.indexOf(node));
 }
 function moveNodeToFirst(index: number) {
     const node = project.value.nodes[index];

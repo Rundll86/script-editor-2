@@ -2,13 +2,16 @@
     <div class="box" :class="{
         'user': message.role === 'user'
     }" v-if="message.role !== 'system'">
-        <span class="avatar">{{ message.role }}</span>
-        <div ref="content" class="content"></div>
+        <div class="title">
+            <span class="avatar" @click="hidden = !hidden">{{ message.role }}</span>
+            <span class="preview" v-if="hidden" v-html="renderText"></span>
+        </div>
+        <div ref="content" class="content" v-if="!hidden" v-html="renderText"></div>
     </div>
 </template>
 <script setup lang="ts">
 import { OpenAIProtocol } from '@/tools';
-import { onMounted, PropType, ref, watch } from 'vue';
+import { nextTick, onMounted, PropType, ref, watch } from 'vue';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import "highlight.js/styles/vs2015.min.css";
@@ -20,6 +23,8 @@ const props = defineProps({
     }
 });
 const content = ref<HTMLDivElement | null>(null);
+const renderText = ref("");
+const hidden = ref(false);
 async function loadContent(data: string) {
     const div = document.createElement("div");
     div.innerHTML = data;
@@ -31,17 +36,22 @@ async function loadContent(data: string) {
     const rawContent = div.innerHTML;
     return await marked(rawContent, { async: true });
 }
+async function loadMessage(value?: string) {
+    renderText.value = await loadContent(value ?? props.message.content);
+}
 watch(() => props.message.content, async (value) => {
-    if (content.value) {
-        content.value.innerHTML = await loadContent(value);
-        content.value.querySelectorAll("pre code").forEach((code) => {
-            hljs.highlightElement(code as HTMLElement);
-        });
-        emit("scroll");
-    }
+    await loadMessage(value);
+    nextTick(() => {
+        if (content.value) {
+            content.value.querySelectorAll("pre code").forEach((code) => {
+                hljs.highlightElement(code as HTMLElement);
+            });
+            emit("scroll");
+        }
+    });
 });
 onMounted(async () => {
-    if (content.value) content.value.innerHTML = await loadContent(props.message.content);
+    await loadMessage();
 });
 </script>
 <style scoped>
@@ -54,6 +64,20 @@ onMounted(async () => {
     margin-left: auto;
 }
 
+.title {
+    display: flex;
+}
+
+.preview {
+    overflow: auto;
+    text-wrap: nowrap;
+    margin-left: 5px;
+}
+
+.preview::-webkit-scrollbar {
+    display: none;
+}
+
 .user {
     margin-left: 0;
 }
@@ -63,6 +87,14 @@ onMounted(async () => {
     border-radius: 5px;
     display: inline-block;
     padding: 2px 4px;
+}
+
+.avatar:hover {
+    background-color: rgb(215, 215, 215);
+}
+
+.avatar:active {
+    background-color: rgb(200, 200, 200);
 }
 
 .content {

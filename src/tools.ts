@@ -1,4 +1,4 @@
-import { Message, Vector } from "./structs";
+import { Message, NodeScript, ProjectData, Vector } from "./structs";
 import unknownImage from "./assets/unknown-image.png";
 import { marked } from "marked";
 import axios, { AxiosError } from "axios";
@@ -422,5 +422,18 @@ export namespace OpenAIProtocol {
     }
     export async function streamMessage(context: MessageContext[], callback: ResponseCallbackFunction) {
         return await request(context, true, callback);
+    }
+}
+export namespace NodeState {
+    export function getChildren(node: NodeScript, project: ProjectData, visited: string[] = []): NodeScript[] {
+        if (visited.includes(node.id)) return [];
+        visited.push(node.id);
+        const plainChildren = node.outPoints
+            .map(point => project.nodes.find(node => node.id === point.nextId) as NodeScript)
+            .filter(Boolean);
+        return [
+            ...plainChildren.flatMap((node) => getChildren(node, project, visited)),
+            ...plainChildren
+        ];
     }
 }

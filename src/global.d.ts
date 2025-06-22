@@ -13,6 +13,15 @@ declare global {
         closeWindow(target: WindowType): void;
         moveToTop(target: WindowType): void;
         dragToZero(target: WindowType): void;
+        mouse: {
+            left: boolean;
+            right: boolean;
+            middle: boolean;
+        };
+        keyboard: {
+            ctrl: boolean;
+            shift: boolean;
+        };
     }
     interface ObjectConstructor {
         hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, any>;

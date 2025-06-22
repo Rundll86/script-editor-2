@@ -49,7 +49,7 @@ defineProps({
     padding: 20px;
     border-radius: 0 0 var(--r) var(--r);
     flex: 1;
-    max-height: 50vh;
+    max-height: 80vh;
     overflow: auto;
 }
 </style>

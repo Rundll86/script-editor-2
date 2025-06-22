@@ -69,9 +69,13 @@ function startDrag(e: TargetAndVector) {
 };
 function updateDrag(e: TargetAndVector) {
     if (!isDragging.value) return;
-    x.value = e.clientX - mouseOffset[0];
-    y.value = e.clientY - mouseOffset[1];
-    emit("drag", [x, y]);
+    const targetX = e.clientX - mouseOffset[0];
+    const targetY = e.clientY - mouseOffset[1];
+    const diffX = targetX - x.value;
+    const diffY = targetY - y.value;
+    x.value = targetX;
+    y.value = targetY;
+    emit("drag", [diffX, diffY]);
 };
 function endDrag() {
     if (!isDragging.value) return;

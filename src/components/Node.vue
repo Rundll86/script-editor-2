@@ -8,7 +8,7 @@ import CirclePoint from './CirclePoint.vue';
 import OptionLabel from './OptionLabel.vue';
 import OptionList from './OptionList.vue';
 import SquareButton from './SquareButton.vue';
-import { createObjectURL } from '@/tools';
+import { createObjectURL, NodeState } from '@/tools';
 import Deskable from './Deskable.vue';
 import SmallButton from './SmallButton.vue';
 import Resizable from './Resizable.vue';
@@ -54,6 +54,7 @@ const previewText = computed(() => {
     }) ?? "";
 });
 const isEntry = computed(() => project.entryNode === data.id);
+const children = computed(() => NodeState.getChildren(data, project)) as ComputedRef<NodeScript[]>;
 function createOutPoint() {
     data.outPoints.push(new OutPoint());
 };
@@ -112,10 +113,17 @@ function updateNounIndex(refer: string, newIndex: number, targetIndex: number) {
         }
     });
 };
+function handleChildDiff(dx: number = 0, dy: number = 0) {
+    children.value.forEach(child => {
+        child.position.x += dx;
+        child.position.y += dy;
+    });
+};
 window.addEventListener("mouseup", endConnect);
 </script>
 <template>
-    <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node">
+    <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node"
+        @drag="window.keyboard.shift && handleChildDiff(...$event)">
         <div class="titlebar" data-region="true">
             <CirclePoint :data-node="data.id" data-point="in" />
             {{ nodeTypeNames[nodeTypes.indexOf(data.type)] }}
