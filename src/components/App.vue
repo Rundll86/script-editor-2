@@ -218,13 +218,12 @@
                     </Frame>
                     <Frame title="AI">
                         智谱清言 API Key：
-                        <input v-model="settings.zhipuApiKey">
-                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton><br>
+                        <input v-model="settings.zhipuApiKey"><br>
                         DeepSeek API Key：
-                        <input v-model="settings.deepseekApiKey">
-                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton><br>
+                        <input v-model="settings.deepseekApiKey"><br>
                         使用的AI：
                         <Selector :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
+                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
                     </Frame>
                 </Window>
                 <Window v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
@@ -469,18 +468,22 @@ async function compile() {
 }
 async function checkAPIKey() {
     try {
-        OpenAIProtocol.assignService({ key: settings.value.zhipuApiKey });
-        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.Zhipu);
-        await OpenAIProtocol.syncMessage([{
-            role: "user",
-            content: "你好！"
-        }]);
-        OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
-        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
-        await OpenAIProtocol.syncMessage([{
-            role: "user",
-            content: "你好！"
-        }]);
+        window.msg("info", "正在检测中...");
+        if (settings.value.currentAI === 0) {
+            OpenAIProtocol.assignService({ key: settings.value.zhipuApiKey });
+            OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.Zhipu);
+            await OpenAIProtocol.syncMessage([{
+                role: "user",
+                content: "你好！"
+            }]);
+        } else if (settings.value.currentAI === 1) {
+            OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
+            OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
+            await OpenAIProtocol.syncMessage([{
+                role: "user",
+                content: "你好！"
+            }]);
+        }
         window.msg("info", "API 密钥校验通过");
     } catch (e: any) {
         window.msg("error", e);

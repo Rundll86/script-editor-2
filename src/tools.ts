@@ -370,6 +370,9 @@ export namespace OpenAIProtocol {
             },
             body: JSON.stringify({ messages: context, model: service.model, stream })
         });
+        if (!response.ok) {
+            throw new Error(`${response.status}${response.statusText}`);
+        }
         if (stream) {
             const reader = response.body?.getReader();
             let result = "";
