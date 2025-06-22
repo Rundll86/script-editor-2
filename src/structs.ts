@@ -178,5 +178,7 @@ export class Settings extends Configurable {
     canConnectToSelf: boolean = false;
     curveMagnification: number = 0.5;
     createNodeOffset: number = 100;
-    apikey: string = "";
+    zhipuApiKey: string = "";
+    deepseekApiKey: string = "";
+    currentAI: number = 0; // 0: zhipu, 1: deepseek
 }

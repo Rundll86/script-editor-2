@@ -218,8 +218,13 @@
                     </Frame>
                     <Frame title="AI">
                         智谱清言 API Key：
-                        <input v-model="settings.apikey">
-                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
+                        <input v-model="settings.zhipuApiKey">
+                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton><br>
+                        DeepSeek API Key：
+                        <input v-model="settings.deepseekApiKey">
+                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton><br>
+                        使用的AI：
+                        <Selector :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
                     </Frame>
                 </Window>
             </div>
@@ -261,9 +266,10 @@ import {
     downloadFile,
     Drawing,
     elementCenter,
-    everyFrame, offset,
+    everyFrame, Markdown, offset,
     uploadFile,
-    uuid
+    uuid,
+    OpenAIProtocol
 } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
@@ -283,8 +289,8 @@ import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
 import * as ZipJS from "@zip.js/zip.js";
 import Ranger from "./Ranger.vue";
-import { ZhipuAI } from "zhipuai";
-onMounted(() => {
+import prompt from "@/prompt.txt";
+onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
         Drawing.resizeCanvas();
@@ -352,9 +358,6 @@ function createNode(type: NodeType) {
 }
 function deleteSelfMessage(index: number) {
     editorState.value.messages.splice(index, 1);
-}
-function showMessage(type: MessageType, data: string) {
-    editorState.value.messages.push({ type, data });
 }
 async function createImage() {
     const files = await uploadFile("image/*", false);
@@ -456,28 +459,22 @@ async function compile() {
 }
 async function checkAPIKey() {
     try {
-        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-            headers: {
-                "Authorization": `Bearer ${settings.value.apikey}`,
-                "Content-Type": "application/json"
-            },
-            method: "post",
-            body: JSON.stringify({
-                messages: [
-                    {
-                        role: "user",
-                        content: "你好"
-                    }
-                ],
-                model: "glm-4-flash-250414"
-            })
-        }).then((res) => res.json());
-        if (response.error) {
-            window.msg("error", `${response.error.code}：${response.error.message}`);
-        } else {
-            window.msg("info", "API Key验证成功！");
-        }
-    } catch (error) { }
+        OpenAIProtocol.assignService({ key: settings.value.zhipuApiKey });
+        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.Zhipu);
+        await OpenAIProtocol.syncMessage([{
+            role: "user",
+            content: "你好！"
+        }]);
+        OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
+        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
+        await OpenAIProtocol.syncMessage([{
+            role: "user",
+            content: "你好！"
+        }]);
+        window.msg("info", "API 密钥校验通过");
+    } catch (e: any) {
+        window.msg("error", e);
+    }
 }
 function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
     if (!settings.value.canConnectToSelf) {
@@ -486,7 +483,7 @@ function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
                 if (point.nextId === node.id) {
                     point.nextId = null;
                     point.inElement = null;
-                    showMessage("warn", "节点禁止连接到自身");
+                    window.msg("warn", "节点禁止连接到自身");
                 }
             });
         });
@@ -510,7 +507,10 @@ function moveNodeToFirst(index: number) {
     project.value.nodes.splice(index, 1);
     project.value.nodes.push(node);
 }
-window.msg = showMessage;
+window.msg = <T extends string>(type: MessageType, data: T) => {
+    editorState.value.messages.push({ type, data });
+    return data;
+}
 window.project = project;
 window.settings = settings;
 window.state = editorState;
@@ -538,6 +538,7 @@ window.dragToZero = (type: WindowType) => {
 watch(() => project.value.nodes, checkNodeConnectionToSelf, { deep: true });
 watch(settings, (newV) => {
     Drawing.setOffsetMulitplier(newV.curveMagnification);
+    OpenAIProtocol.assignService({ key: newV.zhipuApiKey });
 }, { deep: true });
 </script>
 <style>

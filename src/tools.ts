@@ -1,16 +1,12 @@
-import { Vector } from "./structs";
+import { Message, Vector } from "./structs";
 import unknownImage from "./assets/unknown-image.png";
-const uuidGenerated: string[] = [];
+import { marked } from "marked";
+import axios, { AxiosError } from "axios";
 export function uuid() {
-    let result;
-    do {
-        result = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    } while (uuidGenerated.includes(result));
-    uuidGenerated.push(result);
-    return result;
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 };
 export function declareGlobalVaribles<T>(obj: Record<string, T>) {
     Object.keys(obj).forEach((key) => {
@@ -49,7 +45,6 @@ export function findClosestBezierCircleIntersection(
     };
     return closestIntersection;
 };
-
 type RecursionArray<T> = T | T[] | RecursionArray<T>[];
 export function keyMirror(...keys: RecursionArray<string>[]) {
     const result: Record<string, string> = {};
@@ -290,7 +285,7 @@ export function createObjectURL(data: string | ArrayBuffer | null) {
 }
 export function arrayBufferToBase64(buffer: ArrayBuffer) {
     const uint8Array = new Uint8Array(buffer);
-    let binaryString = '';
+    let binaryString = "";
     for (let i = 0; i < uint8Array.length; i++) {
         binaryString += String.fromCharCode(uint8Array[i]);
     }
@@ -312,4 +307,98 @@ export function limited(min: number, value: number, max: number) {
 }
 export function offset(value: number, rate: number = 0.5) {
     return value * randFloat(1 - rate, 1 + rate);
+}
+export namespace Markdown {
+    export async function filter(md: string, selector: string) {
+        const html = document.createElement("div");
+        html.innerHTML = await marked(md, { async: true });
+        return [...html.querySelectorAll(selector)].map(e => e.innerHTML);
+    }
+}
+export namespace OpenAIProtocol {
+    let service: AIService = {
+        key: "",
+        model: "",
+        endPoint: ""
+    };
+    interface MessageContext {
+        role: "user" | "assistant" | "system";
+        content: string;
+    }
+    interface ResponseCallback {
+        message: string;
+        finished: boolean;
+    }
+    interface AIService {
+        key: string;
+        model: string;
+        endPoint: string;
+    }
+    type ResponseCallbackFunction = (data: ResponseCallback) => void;
+    type AIServicePart = Partial<AIService>;
+    function getAuthorization() {
+        return `Bearer ${service.key}`;
+    }
+    function parseStreamChunk(chunk: any) {
+        return JSON.parse(chunk.toString().slice(6));
+    }
+    async function request(context: MessageContext[], stream: true, callback: ResponseCallbackFunction): Promise<string>;
+    async function request(context: MessageContext[], stream: false): Promise<string>;
+    async function request(context: MessageContext[], stream: boolean, callback?: ResponseCallbackFunction): Promise<string> {
+        const response = await axios.post(service.endPoint, JSON.stringify({
+            messages: context,
+            model: service.model,
+            stream
+        }), {
+            headers: {
+                "Authorization": getAuthorization(),
+                "Content-Type": "application/json"
+            },
+            method: "post",
+            responseType: stream ? "stream" : "json"
+        });
+        if (response.data.error) {
+            throw new AxiosError(response.data.error.message, response.data.error.code);
+        }
+        if (stream) {
+            let result = "";
+            response.data.on("data", (chunk: string) => {
+                const { content } = parseStreamChunk(chunk).choices[0];
+                result += content;
+                callback!({
+                    message: content,
+                    finished: false
+                });
+            });
+            return new Promise(resolve => {
+                response.data.on("end", () => callback!({
+                    message: result,
+                    finished: true
+                }));
+                resolve(result);
+            });
+        } else return response.data;
+    }
+    export namespace PresetServices {
+        export const Zhipu: AIServicePart = {
+            model: "glm-4-flash-250414",
+            endPoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+        }
+        export const DeepSeek: AIServicePart = {
+            model: "deepseek-chat",
+            endPoint: "https://api.deepseek.com/chat/completions"
+        }
+    }
+    export function assignService(servicePart: AIServicePart) {
+        Object.assign(service, servicePart);
+    }
+    export function useService(newService: AIService) {
+        service = newService;
+    }
+    export async function syncMessage(context: MessageContext[]) {
+        return await request(context, false);
+    }
+    export async function streamMessage(context: MessageContext[], callback: ResponseCallbackFunction) {
+        return await request(context, true, callback);
+    }
 }
