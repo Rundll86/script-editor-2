@@ -214,7 +214,7 @@ window.addEventListener("mouseup", endConnect);
 }
 
 .node * {
-    text-wrap-mode: nowrap;
+    text-wrap: nowrap;
 }
 
 .node-part {
@@ -276,7 +276,7 @@ window.addEventListener("mouseup", endConnect);
 }
 
 .preview-text {
-    text-wrap-mode: wrap;
+    text-wrap: wrap;
     overflow: hidden;
     width: 100%;
     height: 100%;

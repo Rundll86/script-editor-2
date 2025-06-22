@@ -1,16 +1,12 @@
-import { Vector } from "./structs";
+import { Message, Vector } from "./structs";
 import unknownImage from "./assets/unknown-image.png";
-const uuidGenerated: string[] = [];
+import { marked } from "marked";
+import axios, { AxiosError } from "axios";
 export function uuid() {
-    let result;
-    do {
-        result = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    } while (uuidGenerated.includes(result));
-    uuidGenerated.push(result);
-    return result;
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 };
 export function declareGlobalVaribles<T>(obj: Record<string, T>) {
     Object.keys(obj).forEach((key) => {
@@ -49,7 +45,6 @@ export function findClosestBezierCircleIntersection(
     };
     return closestIntersection;
 };
-
 type RecursionArray<T> = T | T[] | RecursionArray<T>[];
 export function keyMirror(...keys: RecursionArray<string>[]) {
     const result: Record<string, string> = {};
@@ -290,7 +285,7 @@ export function createObjectURL(data: string | ArrayBuffer | null) {
 }
 export function arrayBufferToBase64(buffer: ArrayBuffer) {
     const uint8Array = new Uint8Array(buffer);
-    let binaryString = '';
+    let binaryString = "";
     for (let i = 0; i < uint8Array.length; i++) {
         binaryString += String.fromCharCode(uint8Array[i]);
     }
@@ -312,4 +307,120 @@ export function limited(min: number, value: number, max: number) {
 }
 export function offset(value: number, rate: number = 0.5) {
     return value * randFloat(1 - rate, 1 + rate);
+}
+export namespace Markdown {
+    export async function filter(md: string, selector: string) {
+        const html = document.createElement("div");
+        html.innerHTML = await marked(md, { async: true });
+        return [...html.querySelectorAll(selector)].map(e => e.innerHTML);
+    }
+}
+export namespace XML {
+    export function filter(xml: string, selector: string) {
+        const html = document.createElement("div");
+        html.innerHTML = xml;
+        return [...html.querySelectorAll(selector)].map(e => e.innerHTML);
+    }
+}
+export namespace OpenAIProtocol {
+    export interface MessageContext {
+        role: Roles;
+        content: string;
+    }
+    interface ResponseCallback {
+        message: string;
+        finished: boolean;
+    }
+    interface AIService {
+        key: string;
+        model: string;
+        endPoint: string;
+    }
+    type ResponseCallbackFunction = (data: ResponseCallback) => void | Promise<void>;
+    type AIServicePart = Partial<AIService>;
+    type Roles = "assistant" | "user" | "system";
+    let service: AIService = {
+        key: "",
+        model: "",
+        endPoint: ""
+    };
+    function getAuthorization() {
+        return `Bearer ${service.key}`;
+    }
+    function parseStreamChunk(chunk: any): { choices: { delta: { role: Roles, content: string } }[] } {
+        const splited: string[] = chunk.split(/[\n\r]/).map((s: string) => s.slice(6)).filter(Boolean).filter((e: string) => e !== "[DONE]");
+        try {
+            return splited.map(e => JSON.parse(e)).reduce((prev, cur) => {
+                prev.choices[0].delta.content += cur.choices[0].delta.content;
+                return prev;
+            }, { choices: [{ delta: { role: "assistant", content: "" } }] });
+        } catch (e: any) {
+            console.log(chunk, e);
+            return { choices: [{ delta: { role: "assistant", content: "" } }] };
+        }
+    }
+    async function request(context: MessageContext[], stream: true, callback: ResponseCallbackFunction): Promise<string>;
+    async function request(context: MessageContext[], stream: false): Promise<string>;
+    async function request(context: MessageContext[], stream: boolean, callback?: ResponseCallbackFunction): Promise<string> {
+        const response = await fetch(`${service.endPoint}?random=${Math.random()}`, {
+            method: "POST",
+            headers: {
+                "Authorization": getAuthorization(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ messages: context, model: service.model, stream })
+        });
+        if (!response.ok) {
+            throw new Error(`${response.status}${response.statusText}`);
+        }
+        if (stream) {
+            const reader = response.body?.getReader();
+            let result = "";
+            if (reader) {
+                let finished;
+                while (!finished) {
+                    const { done, value } = await reader.read();
+                    finished = done;
+                    if (finished) {
+                        await callback!({
+                            message: result,
+                            finished: true
+                        });
+                        break;
+                    }
+                    const text = new TextDecoder().decode(value);
+                    const data = parseStreamChunk(text);
+                    const { content } = data.choices[0].delta;
+                    result += content;
+                    await callback!({
+                        message: content,
+                        finished: false
+                    });
+                }
+            }
+            return result;
+        } else return await response.text();
+    }
+    export namespace PresetServices {
+        export const Zhipu: AIServicePart = {
+            model: "glm-4-flash-250414",
+            endPoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+        }
+        export const DeepSeek: AIServicePart = {
+            model: "deepseek-chat",
+            endPoint: "https://api.deepseek.com/chat/completions"
+        }
+    }
+    export function assignService(servicePart: AIServicePart) {
+        Object.assign(service, servicePart);
+    }
+    export function useService(newService: AIService) {
+        service = newService;
+    }
+    export async function syncMessage(context: MessageContext[]) {
+        return await request(context, false);
+    }
+    export async function streamMessage(context: MessageContext[], callback: ResponseCallbackFunction) {
+        return await request(context, true, callback);
+    }
 }

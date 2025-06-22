@@ -218,9 +218,19 @@
                     </Frame>
                     <Frame title="AI">
                         智谱清言 API Key：
-                        <input v-model="settings.apikey">
+                        <input v-model="settings.zhipuApiKey"><br>
+                        DeepSeek API Key：
+                        <input v-model="settings.deepseekApiKey"><br>
+                        使用的AI：
+                        <Selector :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
                         <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
                     </Frame>
+                </Window>
+                <Window v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
+                    <textarea v-model="editorState.askingMessage" placeholder="问个问题..."
+                        @keydown="askFairy"></textarea><br>
+                    <SmallButton @click="clearConversation">新建对话</SmallButton>
+                    <ConversationBox :data="editorState.conversation" />
                 </Window>
             </div>
         </Layer>
@@ -261,9 +271,12 @@ import {
     downloadFile,
     Drawing,
     elementCenter,
-    everyFrame, offset,
+    everyFrame,
+    offset,
     uploadFile,
-    uuid
+    uuid,
+    OpenAIProtocol,
+    XML
 } from '@/tools';
 import Navbar from './Navbar.vue';
 import Layer from './Layer.vue';
@@ -283,8 +296,9 @@ import Member from './Member.vue';
 import Checkbox from './CheckBox.vue';
 import * as ZipJS from "@zip.js/zip.js";
 import Ranger from "./Ranger.vue";
-import { ZhipuAI } from "zhipuai";
-onMounted(() => {
+import ConversationBox from "./ConversationBox.vue";
+import prompt from "../prompt.txt";
+onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
         Drawing.resizeCanvas();
@@ -349,12 +363,10 @@ function createNode(type: NodeType) {
     const node: NodeScript = new NodeScript(uuid(), type);
     node.position = new Vector(offset(settings.value.createNodeOffset), offset(settings.value.createNodeOffset));
     project.value.nodes.push(node);
+    return node;
 }
 function deleteSelfMessage(index: number) {
     editorState.value.messages.splice(index, 1);
-}
-function showMessage(type: MessageType, data: string) {
-    editorState.value.messages.push({ type, data });
 }
 async function createImage() {
     const files = await uploadFile("image/*", false);
@@ -456,28 +468,73 @@ async function compile() {
 }
 async function checkAPIKey() {
     try {
-        const response = await fetch("https://open.bigmodel.cn/api/paas/v4/chat/completions", {
-            headers: {
-                "Authorization": `Bearer ${settings.value.apikey}`,
-                "Content-Type": "application/json"
-            },
-            method: "post",
-            body: JSON.stringify({
-                messages: [
-                    {
-                        role: "user",
-                        content: "你好"
-                    }
-                ],
-                model: "glm-4-flash-250414"
-            })
-        }).then((res) => res.json());
-        if (response.error) {
-            window.msg("error", `${response.error.code}：${response.error.message}`);
-        } else {
-            window.msg("info", "API Key验证成功！");
+        window.msg("info", "正在检测中...");
+        if (settings.value.currentAI === 0) {
+            OpenAIProtocol.assignService({ key: settings.value.zhipuApiKey });
+            OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.Zhipu);
+            await OpenAIProtocol.syncMessage([{
+                role: "user",
+                content: "你好！"
+            }]);
+        } else if (settings.value.currentAI === 1) {
+            OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
+            OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
+            await OpenAIProtocol.syncMessage([{
+                role: "user",
+                content: "你好！"
+            }]);
         }
-    } catch (error) { }
+        window.msg("info", "API 密钥校验通过");
+    } catch (e: any) {
+        window.msg("error", e);
+    }
+}
+async function askFairy(e: KeyboardEvent) {
+    if (e.key !== "Enter") return;
+    if (editorState.value.responsing) return;
+    e.preventDefault();
+    editorState.value.conversation.push({
+        role: "user",
+        content: `<user-project>${JSON.stringify(project.value)}</user-project>\n${editorState.value.askingMessage}`
+    });
+    editorState.value.conversation.push({
+        role: "assistant",
+        content: ""
+    });
+    editorState.value.askingMessage = "";
+    editorState.value.responsing = true;
+    if (settings.value.currentAI === 0) {
+        OpenAIProtocol.assignService({ key: settings.value.zhipuApiKey });
+        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.Zhipu);
+    } else if (settings.value.currentAI === 1) {
+        OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
+        OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
+    }
+    const result = await OpenAIProtocol.streamMessage([{
+        role: "system",
+        content: prompt
+    }, ...editorState.value.conversation], ({ finished, message }) => {
+        if (finished) {
+            editorState.value.responsing = false;
+            return;
+        } else editorState.value.conversation[editorState.value.conversation.length - 1].content += message;
+    });
+    const codes = XML.filter(result, "script-json");
+    codes.map((e, i) => {
+        const parsed: NodeScript[] = JSON.parse(e);
+        return parsed.map((node, j) => {
+            const result = Object.assign(createNode(node.type), node);
+            result.position = new Vector(
+                -editorState.value.workspace.x + 300 * (i + j),
+                -editorState.value.workspace.y
+            );
+            return result;
+        });
+    });
+    nextTick(rebuildNodeConnection);
+}
+function clearConversation() {
+    editorState.value.conversation = [];
 }
 function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
     if (!settings.value.canConnectToSelf) {
@@ -486,11 +543,21 @@ function checkNodeConnectionToSelf(newNodes: NodeScript[]) {
                 if (point.nextId === node.id) {
                     point.nextId = null;
                     point.inElement = null;
-                    showMessage("warn", "节点禁止连接到自身");
+                    window.msg("warn", "节点禁止连接到自身");
                 }
             });
         });
     }
+}
+function rebuildNodeConnection() {
+    project.value.nodes.forEach(node => {
+        node.outPoints.forEach((point, index) => {
+            if (point.nextId) {
+                point.inElement = document.querySelector(`[data-node="${point.nextId}"][data-point="in"]`);
+                point.outElement = document.querySelector(`[data-node="${node.id}"][data-point="${index}"]`);
+            }
+        });
+    });
 }
 function deleteNode(index: number) {
     const nodeId = project.value.nodes[index].id;
@@ -510,7 +577,10 @@ function moveNodeToFirst(index: number) {
     project.value.nodes.splice(index, 1);
     project.value.nodes.push(node);
 }
-window.msg = showMessage;
+window.msg = <T extends string>(type: MessageType, data: T) => {
+    editorState.value.messages.push({ type, data });
+    return data;
+}
 window.project = project;
 window.settings = settings;
 window.state = editorState;
@@ -568,7 +638,7 @@ body {
 }
 
 textarea {
-    text-wrap-mode: wrap !important;
+    text-wrap: wrap !important;
 }
 
 input,

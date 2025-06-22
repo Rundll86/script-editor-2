@@ -1,8 +1,8 @@
-import type { Ref } from "vue";
-import type { EditorState, ProjectData, Settings, Vector, WindowType } from "./structs";
+import "vue";
+import "./structs";
 declare global {
-    declare interface Window {
-        msg: (type: "info" | "warn" | "error", data: string) => void;
+    interface Window {
+        msg: <T extends string>(type: "info" | "warn" | "error", data: T) => T;
         project: Ref<ProjectData>;
         settings: Ref<Settings>;
         state: Ref<EditorState>;
@@ -14,7 +14,7 @@ declare global {
         moveToTop(target: WindowType): void;
         dragToZero(target: WindowType): void;
     }
-    declare interface ObjectConstructor {
+    interface ObjectConstructor {
         hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, any>;
     }
 }
