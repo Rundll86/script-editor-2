@@ -12,7 +12,7 @@ ScriptEditor 是一个基于界面的 RPG/AVG 游戏剧本设计器，旨在帮�
 
 ## 技术栈
 
-- **前端框架**：Vue 3 + Vite
+- **前端框架**：Vue 3 + Webpack
 - **语言**：TypeScript
 - **其他依赖**：Zip.js 用于项目编译和导出
 
