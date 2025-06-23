@@ -45,7 +45,7 @@ const props = defineProps({
     },
     nullable: { // 是否可以不选择任何选项
         type: Boolean,
-        default: true
+        default: false
     }
 });
 const noOptionTip = "⚠️无有效选项";

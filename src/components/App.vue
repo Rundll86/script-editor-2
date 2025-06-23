@@ -202,10 +202,10 @@
                     <ContainerFrame title="编译菜单">
                         <LeftRightAlign>
                             <template #left>
-                                输出格式：
+                                输出格式
                             </template>
                             <template #right>
-                                <SelectBar :options="['二进制', 'Base64']"
+                                <SelectBar :options="['Binary', 'Base64']"
                                     v-model:selected="editorState.exporter.outputFormat" />
                             </template>
                         </LeftRightAlign>
@@ -253,8 +253,7 @@
                                 连线模式
                             </template>
                             <template #right>
-                                <SelectBar :nullable="false" :options="['直线', '曲线']"
-                                    v-model:selected="settings.lineType" />
+                                <SelectBar :options="['直线', '曲线']" v-model:selected="settings.lineType" />
                             </template>
                         </LeftRightAlign>
                         <template v-if="settings.lineType === 1">

@@ -180,9 +180,10 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
             </div>
             <div class="node-part" v-if="data.type === 'talk' || data.type === 'select'">
                 角色：
-                <SelectBar :options="project.characters.map(char => char.name)" v-model:selected="data.talker" />
+                <SelectBar nullable :options="project.characters.map(char => char.name)"
+                    v-model:selected="data.talker" />
                 当前情绪：
-                <SelectBar :options="project.feelings" v-model:selected="data.feeling" />
+                <SelectBar nullable :options="project.feelings" v-model:selected="data.feeling" />
                 <DeskableContainer class="asset-select" :initial="settings.autoPreview">
                     <template #toggler="props">
                         <SmallButton>
