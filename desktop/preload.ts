@@ -4,3 +4,4 @@ window.addEventListener("keydown", (e) => {
         ipcRenderer.send("toggleDevTools");
     }
 });
+contextBridge.exposeInMainWorld("isDesktop", true);
