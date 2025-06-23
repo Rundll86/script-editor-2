@@ -177,60 +177,130 @@
                     </div>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'project'" :id="'project'" title="项目">
-                    项目名称：
-                    <input type="text" v-model="project.name"><br>
-                    储存编辑器状态？
-                    <Checkbox v-model="project.saveEditorState" />
-                    <WideButton superwide @click="saveProject">保存</WideButton><br>
-                    <WideButton superwide @click="loadProject">加载</WideButton>
+                    <ContainerFrame title="基本">
+                        <LeftRightAlign>
+                            <template #left>
+                                项目名称
+                            </template>
+                            <template #right>
+                                <input type="text" v-model="project.name">
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                储存编辑器状态？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="project.saveEditorState" />
+                            </template>
+                        </LeftRightAlign>
+                        <WideButton superwide @click="saveProject">保存</WideButton><br>
+                        <WideButton superwide @click="loadProject">加载</WideButton>
+                    </ContainerFrame>
                     <ContainerFrame title="编译菜单">
-                        包含完整数据？
-                        <Checkbox v-model="editorState.exporter.fullExporting" /><br>
-                        输出格式：
-                        <SelectBar :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" />
-                        <br>
-                        是否加密？
-                        <Checkbox v-model="editorState.exporter.encryption" />
-                        <input type="password" v-if="editorState.exporter.encryption" placeholder="密码..."
-                            v-model="editorState.exporter.password"><br>
-                        <div class="text-right">
-                            <WideButton style="margin: 0;" @click="downloadFile(compile(), `${project.name}.script`);">
-                                开始编译
-                            </WideButton>
-                        </div>
+                        <LeftRightAlign>
+                            <template #left>
+                                输出格式：
+                            </template>
+                            <template #right>
+                                <SelectBar :options="['二进制', 'Base64']"
+                                    v-model:selected="editorState.exporter.outputFormat" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                包含完整数据？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="editorState.exporter.fullExporting" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                是否加密？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="editorState.exporter.encryption" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign v-if="editorState.exporter.encryption">
+                            <template #left>
+                                密码
+                            </template>
+                            <template #right>
+                                <input type="password" placeholder="不可为空" v-model="editorState.exporter.password">
+                            </template>
+                        </LeftRightAlign>
+                        <WideButton superwide @click="downloadFile(compile(), `${project.name}.script`);">
+                            开始编译
+                        </WideButton>
                     </ContainerFrame>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'setting'" :id="'setting'" title="设置">
                     <ContainerFrame title="线条">
-                        连线模式：
-                        <SelectBar :options="['直线', '曲线']" v-model:selected="settings.lineType" />
-                        <div v-if="settings.lineType === 1">
-                            曲线倍率：
-                            <RangeBar :mode="'percent'" :fix="2" :min="-0.5" :max="1.5"
+                        <LeftRightAlign>
+                            <template #left>
+                                线条绘制层
+                            </template>
+                            <template #right>
+                                <SelectBar v-model:selected="settings.lineLayer" :options="['前景', '背景']" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                连线模式
+                            </template>
+                            <template #right>
+                                <SelectBar :nullable="false" :options="['直线', '曲线']"
+                                    v-model:selected="settings.lineType" />
+                            </template>
+                        </LeftRightAlign>
+                        <template v-if="settings.lineType === 1">
+                            曲线倍率<br>
+                            <RangeBar :mode="'percent'" :fix="2" :min="-1" :max="2"
                                 v-model:value="settings.curveMagnification" />
-                        </div>
-                        <br v-else>
-                        线条绘制层：
-                        <SelectBar v-model:selected="settings.lineLayer" :options="['前景', '背景']" />
+                        </template>
                     </ContainerFrame>
                     <ContainerFrame title="节点">
-                        节点是否可连接到自身？
-                        <Checkbox v-model="settings.canConnectToSelf"
-                            @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
-                        <br>
-                        自动开启头像预览？
-                        <Checkbox v-model="settings.autoPreview" /><br>
-                        创建节点偏移：<br>
+                        <LeftRightAlign>
+                            <template #left>
+                                节点是否可连接到自身？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="settings.canConnectToSelf"
+                                    @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                自动开启头像预览？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="settings.autoPreview" />
+                            </template>
+                        </LeftRightAlign>
+                        创建节点偏移<br>
                         <RangeBar :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </ContainerFrame>
                     <ContainerFrame title="仙灵">
-                        智谱清言 API Key：
-                        <input v-model="settings.zhipuApiKey"><br>
-                        DeepSeek API Key：
-                        <input v-model="settings.deepseekApiKey"><br>
-                        使用模型：
-                        <SelectBar :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
-                        <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
+                        <LeftRightAlign>
+                            <template #left>
+                                ApiKey
+                            </template>
+                            <template #right>
+                                <input v-if="settings.currentAI === 0" v-model="settings.zhipuApiKey">
+                                <input v-else-if="settings.currentAI === 1" v-model="settings.deepseekApiKey">
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                使用模型
+                            </template>
+                            <template #right>
+                                <SelectBar :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
+                            </template>
+                        </LeftRightAlign>
+                        <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
                     </ContainerFrame>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
@@ -306,6 +376,7 @@ import * as ZipJS from "@zip.js/zip.js";
 import RangeBar from "./RangeBar.vue";
 import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
+import LeftRightAlign from "./LeftRightAlign.vue";
 onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -659,7 +730,7 @@ input,
 textarea {
     background-color: rgba(0, 0, 0, 0.05);
     padding: 3px 5px;
-    border-bottom: 2px solid transparent;
+    border-bottom: 2px solid rgb(200, 200, 200);
     transition: background-color .2s ease-out, border-bottom-color .2s ease-out;
     border-radius: 5px;
 }

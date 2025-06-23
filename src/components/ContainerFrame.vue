@@ -17,6 +17,7 @@ defineProps({
     --font-size: 14px;
     --title: 'Frame';
     border: 1px solid rgb(200, 200, 200);
+    /* background-color: rgba(0, 0, 0, 0.05); */
     border-radius: 5px;
     padding: 10px;
     position: relative;
