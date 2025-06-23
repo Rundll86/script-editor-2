@@ -2,6 +2,7 @@
     <div id="script-editor" class="script-editor" :class="{
         connecting: project.nodes.some(node => node.outPoints.some(point => point.followingCursor))
     }">
+        <title>剧本编辑器 - v2{{ window.isDesktop ? "(D)" : "" }}</title>
         <StaticLayer :priority="-1">
             <DraggableContainer region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
                 v-model:y="editorState.workspace.y">
