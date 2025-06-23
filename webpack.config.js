@@ -3,6 +3,7 @@ const { VueLoaderPlugin } = require("vue-loader");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const WebpackBar = require("webpackbar");
 const CopyPlugin = require("copy-webpack-plugin");
+const { RawSource } = require("webpack-sources");
 /**
  * @type {import('webpack').Configuration}
  */
@@ -72,7 +73,24 @@ module.exports = {
                     }
                 }
             ]
-        })
+        }),
+        (compiler) => {
+            compiler.hooks.thisCompilation.tap('GlobalVariablePlugin', (compilation) => {
+                compilation.hooks.processAssets.tap({
+                    name: 'GlobalVariablePlugin',
+                    stage: compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_INLINE,
+                }, (assets) => {
+                    for (const filename in assets) {
+                        if (filename.endsWith(".js")) {
+                            const originalSource = assets[filename].source();
+                            let modifiedSource = `window.isDevelopment = ${process.env.NODE_ENV === "development"};`;
+                            modifiedSource += "\n" + originalSource;
+                            assets[filename] = new RawSource(modifiedSource);
+                        }
+                    }
+                });
+            });
+        }
     ],
     stats: "errors-warnings",
     devServer: {
@@ -82,5 +100,6 @@ module.exports = {
             logging: "none"
         },
         static: "public"
-    }
+    },
+    mode: process.env.NODE_ENV
 };

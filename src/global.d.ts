@@ -22,6 +22,8 @@ declare global {
             ctrl: boolean;
             shift: boolean;
         };
+        isDesktop: true | void;
+        isDevelopment: boolean;
     }
     interface ObjectConstructor {
         hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, object>;

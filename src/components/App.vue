@@ -171,7 +171,7 @@
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
                         <MemberFrame name="Cyberexplorer" alias="赛博猫猫"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                        <ContainerFrame style="width: fit-content;" title="调试菜单">
+                        <ContainerFrame style="width: fit-content;" title="调试菜单" v-if="settings.showDebugMenu">
                             <SmallButton @click="rebuildNodeConnection">强制重建节点连接</SmallButton>
                         </ContainerFrame>
                     </div>
@@ -301,6 +301,16 @@
                             </template>
                         </LeftRightAlign>
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
+                    </ContainerFrame>
+                    <ContainerFrame title="调试">
+                        <LeftRightAlign>
+                            <template #left>
+                                显示调试菜单（强制）
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="settings.showDebugMenu" />
+                            </template>
+                        </LeftRightAlign>
                     </ContainerFrame>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
