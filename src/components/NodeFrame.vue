@@ -68,7 +68,9 @@ onMounted(() => {
 function rebuildAvatarUrl() {
     try {
         URL.revokeObjectURL(cachedAvatarURL.value)
-    } catch { };
+    } catch (e) {
+        console.error(e);
+    };
     cachedAvatarURL.value = createObjectURL(avatarData.value);
 }
 function createOutPoint() {
