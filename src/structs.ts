@@ -149,9 +149,9 @@ export class ProjectData extends Configurable {
     }
     get feelingsDesciptor() {
         return this.feelings.reduce((data, _, i) => {
-            data[i] = 0;
+            data[i] = -1;
             return data;
-        }, {} as Record<number, 0>);
+        }, {} as Record<number, -1>);
     }
 }
 export type MessageType = "info" | "warn" | "error";

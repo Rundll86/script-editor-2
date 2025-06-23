@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, type ComputedRef, type PropType } from "vue";
+import { computed, onMounted, ref, watch, type ComputedRef, type PropType } from "vue";
 import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
 import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
 import DraggableContainer from "./DraggableContainer.vue";
@@ -53,8 +53,20 @@ const previewText = computed(() => {
         return normalized.callName;
     }) ?? "";
 });
+const cachedAvatarURL = ref("");
 const isEntry = computed(() => project.entryNode === data.id);
 const children = computed(() => NodeState.getChildren(data, project)) as ComputedRef<NodeScript[]>;
+watch(avatarData, rebuildAvatarUrl);
+onMounted(() => {
+    rebuildAvatarUrl();
+    window.addEventListener("mouseup", endConnect);
+});
+function rebuildAvatarUrl() {
+    try {
+        URL.revokeObjectURL(cachedAvatarURL.value)
+    } catch { };
+    cachedAvatarURL.value = createObjectURL(avatarData.value);
+}
 function createOutPoint() {
     data.outPoints.push(new OutPoint());
 };
@@ -119,7 +131,6 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
         child.position.y += dy;
     });
 };
-window.addEventListener("mouseup", endConnect);
 </script>
 <template>
     <DraggableContainer v-model:x="data.position.x" v-model:y="data.position.y" class="node"
@@ -168,7 +179,7 @@ window.addEventListener("mouseup", endConnect);
                 <SelectBar :options="project.feelings" v-model:selected="data.feeling" />
                 <div class="previewer">
                     <span v-if="avatarData">头像预览<br></span>
-                    <img v-if="avatarData" class="preview" :src="createObjectURL(avatarData)" />
+                    <img v-if="avatarData" class="preview" :src="cachedAvatarURL" />
                     <span class="tip" v-else>请先在「世界观」选项卡中创建一个角色<br>并在此情绪下设置一个有效的头像资源。</span>
                 </div>
                 内容：
