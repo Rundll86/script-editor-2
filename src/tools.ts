@@ -1,7 +1,6 @@
-import { Message, NodeScript, ProjectData, Vector } from "./structs";
+import { NodeScript, ProjectData, Vector } from "./structs";
 import unknownImage from "./assets/unknown-image.png";
 import { marked } from "marked";
-import axios, { AxiosError } from "axios";
 export function uuid() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
@@ -347,14 +346,14 @@ export namespace OpenAIProtocol {
     function getAuthorization() {
         return `Bearer ${service.key}`;
     }
-    function parseStreamChunk(chunk: any): { choices: { delta: { role: Roles, content: string } }[] } {
+    function parseStreamChunk(chunk: string): { choices: { delta: { role: Roles, content: string } }[] } {
         const splited: string[] = chunk.split(/[\n\r]/).map((s: string) => s.slice(6)).filter(Boolean).filter((e: string) => e !== "[DONE]");
         try {
             return splited.map(e => JSON.parse(e)).reduce((prev, cur) => {
                 prev.choices[0].delta.content += cur.choices[0].delta.content;
                 return prev;
             }, { choices: [{ delta: { role: "assistant", content: "" } }] });
-        } catch (e: any) {
+        } catch (e) {
             console.log(chunk, e);
             return { choices: [{ delta: { role: "assistant", content: "" } }] };
         }

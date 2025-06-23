@@ -14,8 +14,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import Logo from './Logo.vue';
-import SmallButton from './SmallButton.vue';
+import Logo from "./LogoImage.vue";
+import SmallButton from "./SmallButton.vue";
 </script>
 <style scoped>
 .nav {

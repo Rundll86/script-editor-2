@@ -20,13 +20,13 @@
     </div>
 </template>
 <script setup lang="ts">
-import type { Asset } from '@/structs';
-import { ref, type PropType } from 'vue';
-import SmallButton from './SmallButton.vue';
-import { uploadFile, createObjectURL } from '@/tools';
-import FitValueInput from './FitValueInput.vue';
-import SquareButton from './SquareButton.vue';
-import Resizable from './Resizable.vue';
+import type { Asset } from "@/structs";
+import { ref, type PropType } from "vue";
+import SmallButton from "./SmallButton.vue";
+import { uploadFile, createObjectURL } from "@/tools";
+import FitValueInput from "./FitValueInput.vue";
+import SquareButton from "./SquareButton.vue";
+import Resizable from "./ResizableContainer.vue";
 const props = defineProps({
     data: {
         type: Object as PropType<Asset>,

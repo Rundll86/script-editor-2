@@ -4,9 +4,9 @@
     </div>
 </template>
 <script lang="ts" setup>
-import { OpenAIProtocol } from '@/tools';
-import { PropType, ref } from 'vue';
-import MessageBox from './MessageBox.vue';
+import { OpenAIProtocol } from "@/tools";
+import { PropType, ref } from "vue";
+import MessageBox from "./MessageBox.vue";
 defineProps({
     data: Array as PropType<OpenAIProtocol.MessageContext[]>
 });

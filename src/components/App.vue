@@ -264,8 +264,8 @@ import {
     Character,
     Noun,
     Asset
-} from '@/structs';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+} from "@/structs";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import {
     arrayBufferToBase64,
     base64ToArrayBuffer,
@@ -279,25 +279,25 @@ import {
     OpenAIProtocol,
     XML,
     NodeState
-} from '@/tools';
-import Navbar from './Navbar.vue';
-import Layer from './Layer.vue';
-import Node from './Node.vue';
-import Window from './Window.vue';
-import Frame from './Frame.vue';
-import Selector from './Selector.vue';
-import WideButton from './WideButton.vue';
-import Draggable from './Draggable.vue';
-import OptionLabel from './OptionLabel.vue';
-import OptionList from './OptionList.vue';
-import SquareButton from './SquareButton.vue';
-import AssetBar from './AssetBar.vue';
-import Deskable from './Deskable.vue';
-import SmallButton from './SmallButton.vue';
-import Member from './Member.vue';
-import Checkbox from './CheckBox.vue';
+} from "@/tools";
+import Navbar from "./NavBar.vue";
+import Layer from "./StaticLayer.vue";
+import Node from "./NodeFrame.vue";
+import Window from "./SubWindow.vue";
+import Frame from "./ContainerFrame.vue";
+import Selector from "./SelectBar.vue";
+import WideButton from "./WideButton.vue";
+import Draggable from "./DraggableContainer.vue";
+import OptionLabel from "./OptionLabel.vue";
+import OptionList from "./OptionList.vue";
+import SquareButton from "./SquareButton.vue";
+import AssetBar from "./AssetBar.vue";
+import Deskable from "./DeskableContainer.vue";
+import SmallButton from "./SmallButton.vue";
+import Member from "./MemberFrame.vue";
+import Checkbox from "./CheckBox.vue";
 import * as ZipJS from "@zip.js/zip.js";
-import Ranger from "./Ranger.vue";
+import Ranger from "./RangeBar.vue";
 import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
 onMounted(async () => {
@@ -487,7 +487,7 @@ async function checkAPIKey() {
             }]);
         }
         window.msg("info", "API 密钥校验通过");
-    } catch (e: any) {
+    } catch (e) {
         window.msg("error", e);
     }
 }
@@ -585,7 +585,7 @@ function moveNodeToFirst(index: number) {
     project.value.nodes.splice(index, 1);
     project.value.nodes.push(node);
 }
-window.msg = <T extends string>(type: MessageType, data: T) => {
+window.msg = <T>(type: MessageType, data: T) => {
     editorState.value.messages.push({ type, data });
     return data;
 }

@@ -10,12 +10,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { OpenAIProtocol } from '@/tools';
-import { nextTick, onMounted, PropType, ref, watch } from 'vue';
-import { marked } from 'marked';
-import hljs from 'highlight.js';
+import { OpenAIProtocol } from "@/tools";
+import { nextTick, onMounted, PropType, ref, watch } from "vue";
+import { marked } from "marked";
+import hljs from "highlight.js";
 import "highlight.js/styles/vs2015.min.css";
-const emit = defineEmits(['scroll']);
+const emit = defineEmits(["scroll"]);
 const props = defineProps({
     message: {
         type: Object as PropType<OpenAIProtocol.MessageContext>,

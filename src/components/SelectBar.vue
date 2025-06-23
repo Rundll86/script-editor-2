@@ -28,10 +28,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch, type PropType } from 'vue';
-import SquareButton from './SquareButton.vue';
-import AnimatedContent from './AnimatedContent.vue';
-import { everyFrame } from '@/tools';
+import { computed, onMounted, onUnmounted, ref, watch, type PropType } from "vue";
+import SquareButton from "./SquareButton.vue";
+import AnimatedContent from "./AnimatedContent.vue";
+import { everyFrame } from "@/tools";
 const emit = defineEmits(["update:selected"]);
 const props = defineProps({
     options: {
@@ -47,7 +47,7 @@ const noOptionTip = "⚠️No Options";
 const selected = ref(props.selected);
 const selectedText = computed(() => props.options[selected.value] ?? noOptionTip);
 const opening = ref(false);
-const filter = ref('');
+const filter = ref("");
 const searching = ref(false);
 const optionsbar = ref<HTMLDivElement | null>(null);
 const optionsbarRect = ref<DOMRect | undefined>(undefined);
@@ -65,14 +65,14 @@ watch(() => props.selected, (newValue) => {
 });
 watch(selected, (newValue, oldValue) => {
     if (newValue === oldValue) return;
-    emit('update:selected', newValue);
+    emit("update:selected", newValue);
 });
 everyFrame((stop) => {
     rafStoper = stop;
     optionsbarRect.value = optionsbar.value?.getBoundingClientRect();
 });
 onMounted(() => {
-    emit('update:selected', selected.value);
+    emit("update:selected", selected.value);
 });
 onUnmounted(() => {
     rafStoper?.call(null);

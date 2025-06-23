@@ -7,7 +7,7 @@
     </Frame>
 </template>
 <script setup lang="ts">
-import Frame from './Frame.vue';
+import Frame from "./ContainerFrame.vue";
 </script>
 <style scoped>
 .options {

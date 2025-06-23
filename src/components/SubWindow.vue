@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { PropType } from 'vue';
-import Draggable from './Draggable.vue';
-import Resizable from './Resizable.vue';
-import SquareButton from './SquareButton.vue';
-import type { WindowType } from '@/structs';
+import type { PropType } from "vue";
+import Draggable from "./DraggableContainer.vue";
+import Resizable from "./ResizableContainer.vue";
+import SquareButton from "./SquareButton.vue";
+import type { WindowType } from "@/structs";
 defineProps({
     title: String,
     id: {

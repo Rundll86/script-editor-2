@@ -2,7 +2,7 @@ import "vue";
 import "./structs";
 declare global {
     interface Window {
-        msg: <T extends string>(type: "info" | "warn" | "error", data: T) => T;
+        msg: <T>(type: "info" | "warn" | "error", data: T) => T;
         project: Ref<ProjectData>;
         settings: Ref<Settings>;
         state: Ref<EditorState>;
@@ -24,7 +24,7 @@ declare global {
         };
     }
     interface ObjectConstructor {
-        hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, any>;
+        hasOwn<O, P extends string | number | symbol>(obj: O, prop: P): obj is O & Record<P, object>;
     }
 }
 declare module "vue" {

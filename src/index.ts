@@ -1,5 +1,5 @@
-import { createApp } from 'vue';
-import App from './components/App.vue';
+import { createApp } from "vue";
+import App from "./components/App.vue";
 window.mouse = {
     left: false,
     right: false,
@@ -65,4 +65,4 @@ app.mixin({
         });
     },
 });
-app.mount('#app');
+app.mount("#app");

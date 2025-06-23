@@ -9,12 +9,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
-const emit = defineEmits(['toggle']);
+import { ref } from "vue";
+const emit = defineEmits(["toggle"]);
 const opening = ref(false);
 function toggle() {
     opening.value = !opening.value;
-    emit('toggle', opening.value);
+    emit("toggle", opening.value);
 };
 </script>
 <style scoped>

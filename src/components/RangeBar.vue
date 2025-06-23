@@ -22,8 +22,8 @@
     </div>
 </template>
 <script setup lang="ts">
-import { everyFrame, limited } from '@/tools';
-import { computed, ref, watch, type PropType } from 'vue';
+import { everyFrame, limited } from "@/tools";
+import { computed, ref, watch, type PropType } from "vue";
 const props = defineProps({
     max: {
         type: Number,

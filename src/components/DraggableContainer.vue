@@ -9,7 +9,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 interface TargetAndVector {
     target: EventTarget | null;
     clientX: number;

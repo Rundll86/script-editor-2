@@ -1,5 +1,4 @@
-import { OpenAIProtocol, uuid } from "./tools";
-import prompt from "./prompt.txt";
+import { OpenAIProtocol } from "./tools";
 export type WindowType = typeof windowTypes[number];
 export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting", "ai"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
@@ -158,7 +157,7 @@ export class ProjectData extends Configurable {
 export type MessageType = "info" | "warn" | "error";
 export interface Message {
     type: MessageType;
-    data: string;
+    data: unknown;
 }
 export class ExporterState extends Configurable {
     fullExporting: boolean = true;

@@ -16,8 +16,8 @@ interface TargetAndVector {
     movementY: number;
     preventDefault: () => void;
 }
-import { limited } from '@/tools';
-import { ref, watch, type PropType } from 'vue';
+import { limited } from "@/tools";
+import { ref, watch, type PropType } from "vue";
 const props = defineProps({
     width: {
         type: Number,

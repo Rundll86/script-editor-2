@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { computed, ref, type ComputedRef, type PropType } from 'vue';
-import type { Asset, NodeScript, NormalizedNoun, ProjectData } from '@/structs';
+import { computed, ref, type ComputedRef, type PropType } from "vue";
+import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
 import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
-import Draggable from './Draggable.vue';
-import Selector from './Selector.vue';
-import CirclePoint from './CirclePoint.vue';
-import OptionLabel from './OptionLabel.vue';
-import OptionList from './OptionList.vue';
-import SquareButton from './SquareButton.vue';
-import { createObjectURL, NodeState } from '@/tools';
-import Deskable from './Deskable.vue';
-import SmallButton from './SmallButton.vue';
-import Resizable from './Resizable.vue';
-import Frame from './Frame.vue';
+import Draggable from "./DraggableContainer.vue";
+import Selector from "./SelectBar.vue";
+import CirclePoint from "./CirclePoint.vue";
+import OptionLabel from "./OptionLabel.vue";
+import OptionList from "./OptionList.vue";
+import SquareButton from "./SquareButton.vue";
+import { createObjectURL, NodeState } from "@/tools";
+import Deskable from "./DeskableContainer.vue";
+import SmallButton from "./SmallButton.vue";
+import Resizable from "./ResizableContainer.vue";
+import Frame from "./ContainerFrame.vue";
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -133,8 +133,10 @@ window.addEventListener("mouseup", endConnect);
             </SquareButton>
         </div>
         <div class="content">
-            <CirclePoint normal :key="index" v-for="_, index in data.outPoints" v-if="data.type !== 'select'"
-                @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
+            <template v-if="data.type !== 'select'">
+                <CirclePoint normal :key="index" v-for="_, index in data.outPoints"
+                    @mousedown.prevent="startConnect($event, index)" data-point="0" :data-node="data.id" />
+            </template>
             <div class="node-part" v-if="data.type === 'script'">
                 选择脚本：
                 <Selector :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />

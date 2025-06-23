@@ -4,7 +4,7 @@
     }" @input="updateWidth" :value="modelValue" />
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref } from "vue";
 defineProps({
     modelValue: String
 });
@@ -12,11 +12,11 @@ const emit = defineEmits(["update:modelValue"]);
 const inputWidth = ref(10);
 const autoWidthInput = ref<HTMLInputElement | null>(null);
 const updateWidth = () => {
-    emit('update:modelValue', autoWidthInput.value?.value);
+    emit("update:modelValue", autoWidthInput.value?.value);
     const inputElement = autoWidthInput.value as HTMLInputElement;
-    const tempSpan = document.createElement('span');
-    tempSpan.style.visibility = 'hidden';
-    tempSpan.style.whiteSpace = 'nowrap';
+    const tempSpan = document.createElement("span");
+    tempSpan.style.visibility = "hidden";
+    tempSpan.style.whiteSpace = "nowrap";
     tempSpan.style.fontSize = getComputedStyle(inputElement).fontSize;
     tempSpan.style.fontFamily = getComputedStyle(inputElement).fontFamily;
     tempSpan.textContent = inputElement.value;
