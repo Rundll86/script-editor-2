@@ -10,8 +10,14 @@
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
+const props = defineProps({
+    initial: {
+        type: Boolean,
+        default: false
+    }
+});
 const emit = defineEmits(["toggle"]);
-const opening = ref(false);
+const opening = ref(props.initial);
 function toggle() {
     opening.value = !opening.value;
     emit("toggle", opening.value);

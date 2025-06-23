@@ -215,6 +215,8 @@
                         <Checkbox v-model="settings.canConnectToSelf"
                             @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
                         <br>
+                        自动开启头像预览？
+                        <Checkbox v-model="settings.autoPreview" /><br>
                         创建节点偏移：<br>
                         <RangeBar :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </ContainerFrame>

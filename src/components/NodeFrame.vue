@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch, type ComputedRef, type PropType } from "vue";
 import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
-import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
+import { nodeTypeNames, nodeTypes, OutPoint, Settings } from "@/structs";
 import DraggableContainer from "./DraggableContainer.vue";
 import SelectBar from "./SelectBar.vue";
 import CirclePoint from "./CirclePoint.vue";
@@ -21,6 +21,10 @@ const { data, project } = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
         required: true,
+    },
+    settings: {
+        type: Object as PropType<Settings>,
+        required: true
     }
 });
 const connecting = ref(false);
@@ -177,13 +181,23 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
                 <SelectBar :options="project.characters.map(char => char.name)" v-model:selected="data.talker" />
                 当前情绪：
                 <SelectBar :options="project.feelings" v-model:selected="data.feeling" />
-                <div class="previewer">
-                    <span v-if="avatarData">头像预览<br></span>
-                    <img v-if="avatarData" class="preview" :src="cachedAvatarURL" />
-                    <span class="tip" v-if="data.talker === undefined || data.talker < 0">请先选择一个角色。</span>
-                    <span class="tip" v-else-if="data.feeling === undefined || data.feeling < 0">请先选择一个情绪。</span>
-                    <span class="tip" v-else-if="!avatarData">请先在「世界观」选项卡中为这个角色的此情绪分配一个头像资源。</span>
-                </div>
+                <DeskableContainer class="asset-select" :initial="settings.autoPreview">
+                    <template #toggler="props">
+                        <SmallButton>
+                            头像预览
+                            {{ props.opening ? "▴" : "▾" }}
+                        </SmallButton>
+                    </template>
+                    <template #content>
+                        <div class="previewer">
+                            <img v-if="avatarData" class="preview" :src="cachedAvatarURL" />
+                            <span class="tip" v-if="data.talker === undefined || data.talker < 0">请先选择一个角色。</span>
+                            <span class="tip"
+                                v-else-if="data.feeling === undefined || data.feeling < 0">请先选择一个情绪。</span>
+                            <span class="tip" v-else-if="!avatarData">请先在「世界观」选项卡中为这个角色的此情绪分配一个头像资源。</span>
+                        </div>
+                    </template>
+                </DeskableContainer>
                 内容：
                 <textarea v-model="data.message"></textarea>
                 <ContainerFrame title="专有名词" v-if="nouns.length > 0">
