@@ -10,11 +10,11 @@
         <div class="box" :class="{ opening }">
             <SmallButton @click="uploadAsset" class="upload-btn">🪄上传资源</SmallButton>
             <SmallButton @click="data.data = null">🗑️重置资源</SmallButton>
-            <Resizable class="previewer" v-if="data.data">
+            <ResizableContainer class="previewer" v-if="data.data">
                 <img v-if="data.type === 'image'" class="preview" :src="createObjectURL(data.data)">
                 <video controls v-else-if="data.type === 'video'" class="preview"
                     :src="createObjectURL(data.data)"></video>
-            </Resizable>
+            </ResizableContainer>
             <span v-else-if="data.type !== 'script'">资源无效！请上传一个资源。</span>
         </div>
     </div>
@@ -26,7 +26,7 @@ import SmallButton from "./SmallButton.vue";
 import { uploadFile, createObjectURL } from "@/tools";
 import FitValueInput from "./FitValueInput.vue";
 import SquareButton from "./SquareButton.vue";
-import Resizable from "./ResizableContainer.vue";
+import ResizableContainer from "./ResizableContainer.vue";
 const props = defineProps({
     data: {
         type: Object as PropType<Asset>,

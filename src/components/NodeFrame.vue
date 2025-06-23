@@ -2,17 +2,17 @@
 import { computed, ref, type ComputedRef, type PropType } from "vue";
 import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
 import { nodeTypeNames, nodeTypes, OutPoint } from "@/structs";
-import Draggable from "./DraggableContainer.vue";
-import Selector from "./SelectBar.vue";
+import DraggableContainer from "./DraggableContainer.vue";
+import SelectBar from "./SelectBar.vue";
 import CirclePoint from "./CirclePoint.vue";
 import OptionLabel from "./OptionLabel.vue";
 import OptionList from "./OptionList.vue";
 import SquareButton from "./SquareButton.vue";
 import { createObjectURL, NodeState } from "@/tools";
-import Deskable from "./DeskableContainer.vue";
+import DeskableContainer from "./DeskableContainer.vue";
 import SmallButton from "./SmallButton.vue";
-import Resizable from "./ResizableContainer.vue";
-import Frame from "./ContainerFrame.vue";
+import ResizableContainer from "./ResizableContainer.vue";
+import ContainerFrame from "./ContainerFrame.vue";
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -122,7 +122,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
 window.addEventListener("mouseup", endConnect);
 </script>
 <template>
-    <Draggable v-model:x="data.position.x" v-model:y="data.position.y" class="node"
+    <DraggableContainer v-model:x="data.position.x" v-model:y="data.position.y" class="node"
         @drag="window.keyboard.shift && handleChildDiff(...$event)">
         <div class="titlebar" data-region="true">
             <CirclePoint :data-node="data.id" data-point="in" />
@@ -139,12 +139,12 @@ window.addEventListener("mouseup", endConnect);
             </template>
             <div class="node-part" v-if="data.type === 'script'">
                 选择脚本：
-                <Selector :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
+                <SelectBar :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
             </div>
             <div class="node-part" v-if="data.type === 'media'">
                 选择资源：
-                <Selector :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
-                <Deskable class="asset-select">
+                <SelectBar :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
+                <DeskableContainer class="asset-select">
                     <template #toggler="props">
                         <SmallButton>
                             预览
@@ -152,20 +152,20 @@ window.addEventListener("mouseup", endConnect);
                         </SmallButton>
                     </template>
                     <template #content>
-                        <Resizable>
+                        <ResizableContainer>
                             <img v-if="myAsset?.type === 'image'" class="media-preview"
                                 :src="createObjectURL(myAsset.data)">
                             <video controls v-if="myAsset?.type === 'video'" class="media-preview"
                                 :src="createObjectURL(myAsset.data)"></video>
-                        </Resizable>
+                        </ResizableContainer>
                     </template>
-                </Deskable>
+                </DeskableContainer>
             </div>
             <div class="node-part" v-if="data.type === 'talk' || data.type === 'select'">
                 角色：
-                <Selector :options="project.characters.map(char => char.name)" v-model:selected="data.talker" />
+                <SelectBar :options="project.characters.map(char => char.name)" v-model:selected="data.talker" />
                 当前情绪：
-                <Selector :options="project.feelings" v-model:selected="data.feeling" />
+                <SelectBar :options="project.feelings" v-model:selected="data.feeling" />
                 <div class="previewer">
                     <span v-if="avatarData">头像预览<br></span>
                     <img v-if="avatarData" class="preview" :src="createObjectURL(avatarData)" />
@@ -173,10 +173,10 @@ window.addEventListener("mouseup", endConnect);
                 </div>
                 内容：
                 <textarea v-model="data.message"></textarea>
-                <Frame title="专有名词" v-if="nouns.length > 0">
-                    <Resizable :width="200" :height="50">
-                        <Frame class="preview-text" title="">{{ previewText }}</Frame>
-                    </Resizable>
+                <ContainerFrame title="专有名词" v-if="nouns.length > 0">
+                    <ResizableContainer :width="200" :height="50">
+                        <ContainerFrame class="preview-text" title="">{{ previewText }}</ContainerFrame>
+                    </ResizableContainer>
                     <div :key="index" v-for="noun, index in nouns">
                         {{ noun.refer }}(别名{{ noun.callIndex + 1 }})：
                         <span class="margin5-left" :class="{
@@ -187,7 +187,7 @@ window.addEventListener("mouseup", endConnect);
                             {{ call }}
                         </span>
                     </div>
-                </Frame>
+                </ContainerFrame>
             </div>
             <OptionList class="options" v-if="data.type === 'select'">
                 <template #afterTitle>
@@ -201,7 +201,7 @@ window.addEventListener("mouseup", endConnect);
             </OptionList>
             <br>&nbsp;
         </div>
-    </Draggable>
+    </DraggableContainer>
 </template>
 <style scoped>
 * {

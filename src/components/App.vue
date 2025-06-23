@@ -2,36 +2,36 @@
     <div id="script-editor" class="script-editor" :class="{
         connecting: project.nodes.some(node => node.outPoints.some(point => point.followingCursor))
     }">
-        <Layer :priority="-1">
-            <Draggable region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
+        <StaticLayer :priority="-1">
+            <DraggableContainer region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
                 v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <Node v-for="node, index in project.nodes" :key="node.id"
+                <NodeFrame v-for="node, index in project.nodes" :key="node.id"
                     @delete="window.keyboard.shift ? deleteNodeAndChildren(index) : deleteNode(index)" :data="node"
                     :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
-            </Draggable>
-        </Layer>
-        <Navbar />
-        <Layer :priority="0">
+            </DraggableContainer>
+        </StaticLayer>
+        <NavBar />
+        <StaticLayer :priority="0">
             <div :key="target" v-for="target in orders" class="bus">
-                <Window v-if="target === 'node'" :id="'node'" title="节点管理">
-                    <Frame title="新建节点">
+                <SubWindow v-if="target === 'node'" :id="'node'" title="节点管理">
+                    <ContainerFrame title="新建节点">
                         选择一个节点类型：
-                        <Selector :options="nodeTypeNames" v-model:selected="editorState.selectedNodeType" /><br>
+                        <SelectBar :options="nodeTypeNames" v-model:selected="editorState.selectedNodeType" /><br>
                         <WideButton superwide @click="createNode(nodeTypes[editorState.selectedNodeType])">
                             新建
                         </WideButton>
-                    </Frame>
-                    <Frame title="节点列表">
+                    </ContainerFrame>
+                    <ContainerFrame title="节点列表">
                         <div class="node-list">
                             <span class="node-name" :key="index" v-for="node, index in project.nodes">
                                 {{ node.id }}
                             </span>
                         </div>
-                    </Frame>
-                </Window>
-                <Window v-else-if="target === 'world'" :id="'world'" title="世界观设定">
+                    </ContainerFrame>
+                </SubWindow>
+                <SubWindow v-else-if="target === 'world'" :id="'world'" title="世界观设定">
                     <OptionList title="角色列表">
                         <template #afterTitle>
                             <SquareButton @click="project.characters.push(new Character('', feelingsObject()))">+
@@ -40,19 +40,19 @@
                         <OptionLabel v-for="character, index in project.characters" :key="index">
                             <input type="text" v-model="project.characters[index].name" placeholder="角色名称..." />
                             <SquareButton @click="project.characters.splice(index, 1)">🗑️</SquareButton>
-                            <Deskable>
+                            <DeskableContainer>
                                 <template #toggler="props">
                                     <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
                                 </template>
                                 <template #content>
                                     情绪：
-                                    <Selector :options="project.feelings"
+                                    <SelectBar :options="project.feelings"
                                         v-model:selected="character.selectingFeeling" />
                                     资源：
-                                    <Selector :options="project.assets.map(asset => asset.name)"
+                                    <SelectBar :options="project.assets.map(asset => asset.name)"
                                         v-model:selected="character.feelings[character.selectingFeeling]" />
                                 </template>
-                            </Deskable>
+                            </DeskableContainer>
                         </OptionLabel>
                     </OptionList>
                     <OptionList title="情绪种类">
@@ -72,7 +72,7 @@
                         <OptionLabel v-for="noun, index in project.nouns" :key="index">
                             <input type="text" v-model="project.nouns[index].refer" placeholder="引用名称..." />
                             <SquareButton @click="project.nouns.splice(index, 1)">🗑️</SquareButton>
-                            <Deskable>
+                            <DeskableContainer>
                                 <template #toggler="props">
                                     <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
                                 </template>
@@ -84,11 +84,11 @@
                                         <SquareButton @click="noun.calls.splice(index, 1)">🗑️</SquareButton>
                                     </div>
                                 </template>
-                            </Deskable>
+                            </DeskableContainer>
                         </OptionLabel>
                     </OptionList>
-                </Window>
-                <Window v-else-if="target === 'asset'" :id="'asset'" title="资源管理">
+                </SubWindow>
+                <SubWindow v-else-if="target === 'asset'" :id="'asset'" title="资源管理">
                     <OptionList title="图像">
                         <template #afterTitle>
                             <SquareButton @click="createImage">+</SquareButton>
@@ -119,22 +119,23 @@
                         </OptionLabel>
                         <span v-if="scripts.length === 0">没有定义任何脚本！</span>
                     </OptionList>
-                </Window>
-                <Window v-else-if="target === 'variable'" :id="'variable'" title="变量">
-                    <Frame title="创建变量" class="centerbox">
+                </SubWindow>
+                <SubWindow v-else-if="target === 'variable'" :id="'variable'" title="变量">
+                    <ContainerFrame title="创建变量" class="centerbox">
                         变量名：
                         <input type="text" v-model="editorState.varName" placeholder="Variable...."><br>
                         数据类型▹
-                        <Selector class="margin5" :options="variableTypeNames" v-model:selected="editorState.varType" />
+                        <SelectBar class="margin5" :options="variableTypeNames"
+                            v-model:selected="editorState.varType" />
                         <br>
                         <WideButton @click="createVariable">确定</WideButton>
-                    </Frame>
+                    </ContainerFrame>
                     <OptionList title="变量列表">
                         <OptionLabel :key="index" v-for="vari, index in project.variables">
                             <input type="text" v-model="vari.name">
                             ▸
-                            <Selector :options="variableTypeNames" v-model:selected="vari.type" />
-                            <Deskable>
+                            <SelectBar :options="variableTypeNames" v-model:selected="vari.type" />
+                            <DeskableContainer>
                                 <template #toggler="props">
                                     <SquareButton>{{ props.opening ? "▴" : "▾" }}</SquareButton>
                                 </template>
@@ -142,11 +143,11 @@
                                     初始值：
                                     <input type="text" v-model="vari.value">
                                 </template>
-                            </Deskable>
+                            </DeskableContainer>
                         </OptionLabel>
                     </OptionList>
-                </Window>
-                <Window v-else-if="target === 'about'" :id="'about'" title="关于">
+                </SubWindow>
+                <SubWindow v-else-if="target === 'about'" :id="'about'" title="关于">
                     <div class="centerbox">
                         ScriptEditor是一个基于界面的RPG/AVG游戏剧本设计器。<br>
                         <div class="inline-right margin5">
@@ -162,28 +163,28 @@
                             </a>
                         </div><br>
                         <span class="thanks">特别鸣谢</span><br>
-                        <Member name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
-                        <Member name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
-                        <Member with-border name="TangDo158" alias="唐豆"
+                        <MemberFrame name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
+                        <MemberFrame name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
+                        <MemberFrame with-border name="TangDo158" alias="唐豆"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                        <Member name="Tin-Dunwi" alias="冬薇"
+                        <MemberFrame name="Tin-Dunwi" alias="冬薇"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                        <Member name="Cyberexplorer" alias="赛博猫猫"
+                        <MemberFrame name="Cyberexplorer" alias="赛博猫猫"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
                     </div>
-                </Window>
-                <Window v-else-if="target === 'project'" :id="'project'" title="项目">
+                </SubWindow>
+                <SubWindow v-else-if="target === 'project'" :id="'project'" title="项目">
                     项目名称：
                     <input type="text" v-model="project.name"><br>
                     储存编辑器状态？
                     <Checkbox v-model="project.saveEditorState" />
                     <WideButton superwide @click="saveProject">保存</WideButton><br>
                     <WideButton superwide @click="loadProject">加载</WideButton>
-                    <Frame title="编译菜单">
+                    <ContainerFrame title="编译菜单">
                         包含完整数据？
                         <Checkbox v-model="editorState.exporter.fullExporting" /><br>
                         输出格式：
-                        <Selector :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" />
+                        <SelectBar :options="['二进制', 'Base64']" v-model:selected="editorState.exporter.outputFormat" />
                         <br>
                         是否加密？
                         <Checkbox v-model="editorState.exporter.encryption" />
@@ -194,47 +195,47 @@
                                 开始编译
                             </WideButton>
                         </div>
-                    </Frame>
-                </Window>
-                <Window v-else-if="target === 'setting'" :id="'setting'" title="设置">
-                    <Frame title="线条">
+                    </ContainerFrame>
+                </SubWindow>
+                <SubWindow v-else-if="target === 'setting'" :id="'setting'" title="设置">
+                    <ContainerFrame title="线条">
                         连线模式：
-                        <Selector :options="['直线', '曲线']" v-model:selected="settings.lineType" />
+                        <SelectBar :options="['直线', '曲线']" v-model:selected="settings.lineType" />
                         <div v-if="settings.lineType === 1">
                             曲线倍率：
-                            <Ranger :mode="'percent'" :fix="2" :min="-0.5" :max="1.5"
+                            <RangeBar :mode="'percent'" :fix="2" :min="-0.5" :max="1.5"
                                 v-model:value="settings.curveMagnification" />
                         </div>
                         <br v-else>
                         线条绘制层：
-                        <Selector v-model:selected="settings.lineLayer" :options="['前景', '背景']" />
-                    </Frame>
-                    <Frame title="节点">
+                        <SelectBar v-model:selected="settings.lineLayer" :options="['前景', '背景']" />
+                    </ContainerFrame>
+                    <ContainerFrame title="节点">
                         节点是否可连接到自身？
                         <Checkbox v-model="settings.canConnectToSelf"
                             @update:model-value="checkNodeConnectionToSelf(project.nodes)" />
                         <br>
                         创建节点偏移：<br>
-                        <Ranger :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
-                    </Frame>
-                    <Frame title="AI">
+                        <RangeBar :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
+                    </ContainerFrame>
+                    <ContainerFrame title="AI">
                         智谱清言 API Key：
                         <input v-model="settings.zhipuApiKey"><br>
                         DeepSeek API Key：
                         <input v-model="settings.deepseekApiKey"><br>
                         使用的AI：
-                        <Selector :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
+                        <SelectBar :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
                         <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
-                    </Frame>
-                </Window>
-                <Window v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
+                    </ContainerFrame>
+                </SubWindow>
+                <SubWindow v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
                     <textarea v-model="editorState.askingMessage" placeholder="问个问题..."
                         @keydown="askFairy"></textarea><br>
                     <SmallButton @click="clearConversation">新建对话</SmallButton>
                     <ConversationBox :data="editorState.conversation" />
-                </Window>
+                </SubWindow>
             </div>
-        </Layer>
+        </StaticLayer>
         <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
             info: message.type === 'info',
             warn: message.type === 'warn',
@@ -280,24 +281,24 @@ import {
     XML,
     NodeState
 } from "@/tools";
-import Navbar from "./NavBar.vue";
-import Layer from "./StaticLayer.vue";
-import Node from "./NodeFrame.vue";
-import Window from "./SubWindow.vue";
-import Frame from "./ContainerFrame.vue";
-import Selector from "./SelectBar.vue";
+import NavBar from "./NavBar.vue";
+import StaticLayer from "./StaticLayer.vue";
+import NodeFrame from "./NodeFrame.vue";
+import SubWindow from "./SubWindow.vue";
+import ContainerFrame from "./ContainerFrame.vue";
+import SelectBar from "./SelectBar.vue";
 import WideButton from "./WideButton.vue";
-import Draggable from "./DraggableContainer.vue";
+import DraggableContainer from "./DraggableContainer.vue";
 import OptionLabel from "./OptionLabel.vue";
 import OptionList from "./OptionList.vue";
 import SquareButton from "./SquareButton.vue";
 import AssetBar from "./AssetBar.vue";
-import Deskable from "./DeskableContainer.vue";
+import DeskableContainer from "./DeskableContainer.vue";
 import SmallButton from "./SmallButton.vue";
-import Member from "./MemberFrame.vue";
+import MemberFrame from "./MemberFrame.vue";
 import Checkbox from "./CheckBox.vue";
 import * as ZipJS from "@zip.js/zip.js";
-import Ranger from "./RangeBar.vue";
+import RangeBar from "./RangeBar.vue";
 import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
 onMounted(async () => {

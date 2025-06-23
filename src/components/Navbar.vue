@@ -1,6 +1,6 @@
 <template>
     <div class="nav">
-        <Logo />
+        <LogoImage />
         <SmallButton @dblclick="window.dragToZero('node')" @click="window.openWindow('node')">🎞️节点</SmallButton>
         <SmallButton @dblclick="window.dragToZero('world')" @click="window.openWindow('world')">🌍世界观</SmallButton>
         <SmallButton @dblclick="window.dragToZero('asset')" @click="window.openWindow('asset')">📦资源</SmallButton>
@@ -14,7 +14,7 @@
     </div>
 </template>
 <script setup lang="ts">
-import Logo from "./LogoImage.vue";
+import LogoImage from "./LogoImage.vue";
 import SmallButton from "./SmallButton.vue";
 </script>
 <style scoped>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PropType } from "vue";
-import Draggable from "./DraggableContainer.vue";
-import Resizable from "./ResizableContainer.vue";
+import DraggableContainer from "./DraggableContainer.vue";
+import ResizableContainer from "./ResizableContainer.vue";
 import SquareButton from "./SquareButton.vue";
 import type { WindowType } from "@/structs";
 defineProps({
@@ -13,17 +13,17 @@ defineProps({
 });
 </script>
 <template>
-    <Draggable v-model:dragging="window.windowDraggings.value[id]" v-model:x="window.windowPositions.value[id].x"
-        v-model:y="window.windowPositions.value[id].y" class="window">
+    <DraggableContainer v-model:dragging="window.windowDraggings.value[id]"
+        v-model:x="window.windowPositions.value[id].x" v-model:y="window.windowPositions.value[id].y" class="window">
         <div class="titlebar" data-region="true">
             {{ title }}
             <SquareButton style="margin: 0 0 0 auto;" @click="window.moveToTop(id)">↥</SquareButton>
             <SquareButton style="margin: 0 0 0 5px;" @click="window.closeWindow(id)">×</SquareButton>
         </div>
-        <Resizable :enable="false" class="content">
+        <ResizableContainer :enable="false" class="content">
             <slot></slot>
-        </Resizable>
-    </Draggable>
+        </ResizableContainer>
+    </DraggableContainer>
 </template>
 <style scoped>
 * {
