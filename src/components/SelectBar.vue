@@ -20,7 +20,8 @@
                     </div>
                 </div>
                 <div>
-                    <div class="option" v-if="options.length < 1" @click="msg('error', '无法选中此选项')">{{ noOptionTip }}
+                    <div class="option" v-if="options.length < 1" @click="msg('error', '无法选中')">
+                        {{ noOptionTip }}
                     </div>
                 </div>
             </div>
@@ -41,11 +42,16 @@ const props = defineProps({
     selected: {
         type: Number,
         default: 0
+    },
+    nullable: { // 是否可以不选择任何选项
+        type: Boolean,
+        default: true
     }
 });
-const noOptionTip = "⚠️No Options";
+const noOptionTip = "⚠️无有效选项";
+const notSelectTip = "⚠️未选中任何选项";
 const selected = ref(props.selected);
-const selectedText = computed(() => props.options[selected.value] ?? noOptionTip);
+const selectedText = computed(() => props.options[selected.value] ?? (props.options.length > 0 ? notSelectTip : noOptionTip));
 const opening = ref(false);
 const filter = ref("");
 const searching = ref(false);
@@ -53,9 +59,12 @@ const optionsbar = ref<HTMLDivElement | null>(null);
 const optionsbarRect = ref<DOMRect | undefined>(undefined);
 const { msg } = window;
 let rafStoper: (() => void) | null = null;
-function select(index: number) {
+function select<T extends number>(index: T): T | -1 {
+    if (props.nullable && (index === -1 || index === selected.value))
+        return select(-1);
     selected.value = index;
     opening.value = false;
+    return index;
 };
 function valid(text: string) {
     return !searching.value || text.toLowerCase().includes(filter.value.toLowerCase().trim());

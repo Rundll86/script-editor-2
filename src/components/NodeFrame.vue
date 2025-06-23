@@ -53,9 +53,9 @@ const previewText = computed(() => {
         return normalized.callName;
     }) ?? "";
 });
-const cachedAvatarURL = ref("");
 const isEntry = computed(() => project.entryNode === data.id);
 const children = computed(() => NodeState.getChildren(data, project)) as ComputedRef<NodeScript[]>;
+const cachedAvatarURL = ref("");
 watch(avatarData, rebuildAvatarUrl);
 onMounted(() => {
     rebuildAvatarUrl();
@@ -180,7 +180,9 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
                 <div class="previewer">
                     <span v-if="avatarData">头像预览<br></span>
                     <img v-if="avatarData" class="preview" :src="cachedAvatarURL" />
-                    <span class="tip" v-else>请先在「世界观」选项卡中创建一个角色<br>并在此情绪下设置一个有效的头像资源。</span>
+                    <span class="tip" v-if="data.talker === undefined || data.talker < 0">请先选择一个角色。</span>
+                    <span class="tip" v-else-if="data.feeling === undefined || data.feeling < 0">请先选择一个情绪。</span>
+                    <span class="tip" v-else-if="!avatarData">请先在「世界观」选项卡中为这个角色的此情绪分配一个头像资源。</span>
                 </div>
                 内容：
                 <textarea v-model="data.message"></textarea>
@@ -288,6 +290,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
 
 .tip {
     font-size: 12px;
+    text-wrap: auto;
 }
 
 .asset-select {
