@@ -194,7 +194,11 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
                             <span class="tip" v-if="data.talker === undefined || data.talker < 0">请先选择一个角色。</span>
                             <span class="tip"
                                 v-else-if="data.feeling === undefined || data.feeling < 0">请先选择一个情绪。</span>
-                            <span class="tip" v-else-if="!avatarData">请先在「世界观」选项卡中为这个角色的此情绪分配一个头像资源。</span>
+                            <span class="tip" v-else-if="!avatarData">
+                                请先在「世界观」选项卡中为<br>
+                                {{ project.characters[data.talker].name }} - {{ project.feelings[data.feeling] }}
+                                <br>分配一个头像资源。
+                            </span>
                         </div>
                     </template>
                 </DeskableContainer>
