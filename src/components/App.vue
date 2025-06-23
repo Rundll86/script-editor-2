@@ -223,12 +223,12 @@
                         创建节点偏移：<br>
                         <RangeBar :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </ContainerFrame>
-                    <ContainerFrame title="AI">
+                    <ContainerFrame title="仙灵">
                         智谱清言 API Key：
                         <input v-model="settings.zhipuApiKey"><br>
                         DeepSeek API Key：
                         <input v-model="settings.deepseekApiKey"><br>
-                        使用的AI：
+                        使用模型：
                         <SelectBar :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
                         <SmallButton @click="checkAPIKey">验证可用性</SmallButton>
                     </ContainerFrame>

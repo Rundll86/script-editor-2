@@ -60,7 +60,7 @@ const optionsbarRect = ref<DOMRect | undefined>(undefined);
 const { msg } = window;
 let rafStoper: (() => void) | null = null;
 function select<T extends number>(index: T): T | -1 {
-    if (props.nullable && (index === -1 || index === selected.value))
+    if (props.nullable && index === selected.value)
         return select(-1);
     selected.value = index;
     opening.value = false;
