@@ -1,7 +1,7 @@
 <template>
     <div class="assetbar">
         <div>
-            <FitValueInput v-model="data.name" />
+            <InputBoxButFitWidth v-model="data.name" />
             <SquareButton @click="opening = !opening" v-if="data.type !== 'script'">
                 {{ opening ? '▴' : '▾' }}
             </SquareButton>
@@ -24,7 +24,7 @@ import type { Asset } from "@/structs";
 import { ref, type PropType } from "vue";
 import SmallButton from "./SmallButton.vue";
 import { uploadFile, createObjectURL } from "@/tools";
-import FitValueInput from "./FitValueInput.vue";
+import InputBoxButFitWidth from "./InputBoxButFitWidth.vue";
 import SquareButton from "./SquareButton.vue";
 import ResizableContainer from "./ResizableContainer.vue";
 const props = defineProps({
