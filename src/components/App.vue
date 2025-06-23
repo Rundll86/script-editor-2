@@ -171,6 +171,9 @@
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
                         <MemberFrame name="Cyberexplorer" alias="赛博猫猫"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                        <ContainerFrame style="width: fit-content;" title="调试菜单">
+                            <SmallButton @click="rebuildNodeConnection">强制重建节点连接</SmallButton>
+                        </ContainerFrame>
                     </div>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'project'" :id="'project'" title="项目">

@@ -436,3 +436,6 @@ export namespace NodeState {
         ];
     }
 }
+export async function milliseconds(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
