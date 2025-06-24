@@ -36,7 +36,8 @@
                 <SubWindow v-else-if="target === 'world'" :id="'world'" title="世界观设定">
                     <OptionList title="角色列表">
                         <template #afterTitle>
-                            <SquareButton @click="project.characters.push(new Character('', feelingsObject()))">+
+                            <SquareButton @click="project.characters.push(new Character('', feelingsObject()))">
+                                +
                             </SquareButton>
                         </template>
                         <OptionLabel v-for="character, index in project.characters" :key="index">
@@ -51,7 +52,7 @@
                                     <SelectBar :options="project.feelings"
                                         v-model:selected="character.selectingFeeling" />
                                     资源：
-                                    <SelectBar :options="project.assets.map(asset => asset.name)"
+                                    <SelectBar nullable :options="project.assets.map(asset => asset.name)"
                                         v-model:selected="character.feelings[character.selectingFeeling]" />
                                 </template>
                             </DeskableContainer>

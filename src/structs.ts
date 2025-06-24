@@ -192,7 +192,3 @@ export class Settings extends Configurable {
     autoPreview: boolean = false;
     showDebugMenu: boolean = false;
 }
-export class PlayerVM {
-    currentBackground: ArrayBuffer | null = null;
-    currentNode: string | null = null;
-}

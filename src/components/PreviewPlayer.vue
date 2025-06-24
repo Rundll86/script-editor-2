@@ -3,14 +3,17 @@
         '--w': size.x + 'px',
         '--h': size.y + 'px'
     }">
-        <img v-if="backgroundUrl" :src="backgroundUrl" class="background">
+        <template v-if="backgroundUrl">
+            <img v-if="currentBackground?.type === 'image'" :src="backgroundUrl" class="background">
+            <video autoplay v-else-if="currentBackground?.type === 'video'" :src="backgroundUrl"
+                class="background"></video>
+        </template>
         <div v-else class="background">
-            {{ currentNode ? "无背景图像" : "未播放任何节点" }}
+            {{ currentNode ? "无媒体" : "未播放任何节点" }}
         </div>
         <div class="overlay" @click="checkNext">
             <div class="messagebox" v-if="currentNode?.type === 'talk' || currentNode?.type === 'select'">
-                <img v-if="avatarUrl" :src="avatarUrl" class="avatar">
-                <div v-else class="avatar">无角色头像</div>
+                <AvatarPreview :data="currentNode" :project="project" />
                 <div class="messagecontent">
                     <span class="character">{{ project.characters[currentNode.talker as number].name }}</span>
                     <div class="text">
@@ -27,9 +30,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import { PlayerVM, ProjectData, Vector } from '@/structs';
+import { ProjectData, Vector } from '@/structs';
 import { refObjectUrl } from '@/tools';
 import { computed, PropType, ref, watch } from 'vue';
+import AvatarPreview from './AvatarPreview.vue';
 const props = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
@@ -44,14 +48,17 @@ const props = defineProps({
         default: null
     }
 });
-const playerVM = ref(new PlayerVM());
-const currentNode = computed(() => props.project.nodes.find(node => node.id === playerVM.value.currentNode));
-const backgroundUrl = refObjectUrl(() => playerVM.value.currentBackground);
+const currentNodeId = ref<string | null>("");
+const currentNode = computed(() => props.project.nodes.find(node => node.id === currentNodeId.value));
+const currentBackground = computed(() => currentNode.value?.type === "media" ? props.project.assets[currentNode.value.assetId as number] : null);
+const backgroundUrl = refObjectUrl(() => currentBackground.value?.data as ArrayBuffer);
 const avatarUrl = refObjectUrl(() => props.project.assets[props.project.characters[currentNode.value?.talker ?? 0]?.feelings[currentNode.value?.feeling ?? 0]]?.data as ArrayBuffer);
 watch(() => props.playWith, playFrom);
 function playFrom(id: string | null) {
-    console.log(id, playerVM.value);
-    playerVM.value.currentNode = id;
+    currentNodeId.value = id;
+    if (currentNode.value?.type === "script") {
+        window.msg("info", `执行脚本：${props.project.assets[currentNode.value.assetId as number].name}`);
+    }
 }
 function checkNext() {
     if (!currentNode.value) return;
@@ -78,6 +85,7 @@ function checkNext() {
     align-items: center;
     font-weight: bold;
     font-size: 20px;
+    object-fit: contain;
 }
 
 .overlay {

@@ -13,6 +13,7 @@ import DeskableContainer from "./DeskableContainer.vue";
 import SmallButton from "./SmallButton.vue";
 import ResizableContainer from "./ResizableContainer.vue";
 import ContainerFrame from "./ContainerFrame.vue";
+import AvatarPreview from "./AvatarPreview.vue";
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -33,7 +34,6 @@ const connectingPoint = computed(() => {
     return data.outPoints[connectingIndex.value];
 });
 const avatarData = computed(() => project.assets[project.characters[data.talker ?? 0]?.feelings[data.feeling ?? 0]]?.data);
-const cachedAvatarURL = refObjectUrl(() => avatarData.value as ArrayBuffer);
 const myAsset: ComputedRef<Asset | undefined> = computed(() => {
     return project.assets[data.assetId ?? 0];
 });
@@ -181,8 +181,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
                         </SmallButton>
                     </template>
                     <template #content>
-                        <div class="previewer">
-                            <img v-if="avatarData" class="preview" :src="cachedAvatarURL" />
+                        <AvatarPreview :data="data" :project="project">
                             <span class="tip" v-if="data.talker === undefined || data.talker < 0">请先选择一个角色。</span>
                             <span class="tip"
                                 v-else-if="data.feeling === undefined || data.feeling < 0">请先选择一个情绪。</span>
@@ -191,7 +190,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
                                 {{ project.characters[data.talker].name }} - {{ project.feelings[data.feeling] }}
                                 <br>分配一个头像资源。
                             </span>
-                        </div>
+                        </AvatarPreview>
                     </template>
                 </DeskableContainer>
                 内容：
@@ -278,19 +277,6 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
 
 .options {
     margin-top: 35px;
-}
-
-.previewer {
-    text-align: center;
-}
-
-.preview {
-    width: 70px;
-    height: 70px;
-    border: 1px solid gray;
-    object-fit: contain;
-    padding: 5px;
-    border-radius: 5px;
 }
 
 .media-preview {
