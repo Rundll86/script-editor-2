@@ -143,6 +143,7 @@ export class ProjectData extends Configurable {
     assets: Asset[];
     scripts: string[];
     variables: Variable[];
+    pathes: PreviewPath[][];
     saveEditorState: boolean;
     entryNode: string | null;
     editor?: EditorState;
@@ -176,6 +177,7 @@ export class ProjectData extends Configurable {
         this.assets = [];
         this.scripts = [];
         this.variables = [];
+        this.pathes = [];
         this.saveEditorState = false;
         this.entryNode = null;
     }
@@ -208,6 +210,7 @@ export class EditorState extends Configurable {
     askingMessage: string = "帮我写个对话";
     responsing: boolean = false;
     playWith: string | null = null;
+    connectingPath: boolean = false;
 }
 export class Settings extends Configurable {
     lineType: number = 1; // 0: straight, 1: curved
@@ -225,4 +228,7 @@ export class Settings extends Configurable {
     showDebugMenu: boolean = false;
     previewSize: Vector = new Vector(640, 480);
     showPreviewSizeInfo: boolean = false;
+}
+export class PreviewPath {
+    constructor(public node: string = "", public outIndex: number = 0) { }
 }

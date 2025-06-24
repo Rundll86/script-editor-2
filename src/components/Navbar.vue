@@ -15,8 +15,16 @@
     </div>
 </template>
 <script setup lang="ts">
+import { EditorState } from "@/structs";
 import LogoImage from "./LogoImage.vue";
 import SmallButton from "./SmallButton.vue";
+import { PropType } from "vue";
+defineProps({
+    editorState: {
+        type: Object as PropType<EditorState>,
+        required: true
+    }
+});
 </script>
 <style scoped>
 .nav {

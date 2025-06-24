@@ -14,7 +14,7 @@
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </DraggableContainer>
         </StaticLayer>
-        <NavBar />
+        <NavBar :editorState="editorState" />
         <StaticLayer :priority="0">
             <div :key="target" v-for="target in orders" class="bus">
                 <SubWindow v-if="target === 'node'" :id="'node'" title="节点管理">
@@ -374,6 +374,14 @@
                     <ConversationBox :data="editorState.conversation" />
                 </SubWindow>
                 <SubWindow v-else-if="target === 'preview'" :id="'preview'" title="预览">
+                    <ContainerFrame title="预览路径">
+                        <SmallButton @click="editorState.connectingPath = true">开始编辑</SmallButton>
+                        <ContainerFrame title="路径列表">
+                            <div v-for="path in project.pathes">
+                                <span v-for="pathPart in path">{{ pathPart.node }} : {{ pathPart.outIndex }}</span>
+                            </div>
+                        </ContainerFrame>
+                    </ContainerFrame>
                     <ContainerFrame :title="`播放菜单 · ${editorState.playWith ? '运行中' : '空闲'}`"
                         style="margin-bottom: 5px;">
                         <LeftRightAlign>
