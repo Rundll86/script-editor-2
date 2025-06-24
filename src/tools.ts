@@ -333,7 +333,7 @@ export namespace OpenAIProtocol {
     interface AIService {
         key: string;
         model: string;
-        endPoint: string;
+        baseUrl: string;
     }
     type ResponseCallbackFunction = (data: ResponseCallback) => void | Promise<void>;
     type AIServicePart = Partial<AIService>;
@@ -341,7 +341,7 @@ export namespace OpenAIProtocol {
     let service: AIService = {
         key: "",
         model: "",
-        endPoint: ""
+        baseUrl: ""
     };
     function getAuthorization() {
         return `Bearer ${service.key}`;
@@ -361,7 +361,7 @@ export namespace OpenAIProtocol {
     async function request(context: MessageContext[], stream: true, callback: ResponseCallbackFunction): Promise<string>;
     async function request(context: MessageContext[], stream: false): Promise<string>;
     async function request(context: MessageContext[], stream: boolean, callback?: ResponseCallbackFunction): Promise<string> {
-        const response = await fetch(`${service.endPoint}?random=${Math.random()}`, {
+        const response = await fetch(`${service.baseUrl}?random=${Math.random()}`, {
             method: "POST",
             headers: {
                 "Authorization": getAuthorization(),
@@ -403,11 +403,11 @@ export namespace OpenAIProtocol {
     export namespace PresetServices {
         export const Zhipu: AIServicePart = {
             model: "glm-4-flash-250414",
-            endPoint: "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+            baseUrl: "https://open.bigmodel.cn/api/paas/v4/chat/completions"
         }
         export const DeepSeek: AIServicePart = {
             model: "deepseek-chat",
-            endPoint: "https://api.deepseek.com/chat/completions"
+            baseUrl: "https://api.deepseek.com/chat/completions"
         }
     }
     export function assignService(servicePart: AIServicePart) {

@@ -185,7 +185,7 @@ export class Settings extends Configurable {
     zhipuApiKey: string = "";
     deepseekApiKey: string = "";
     customApiKey: string = "";
-    customEndPoint: string = "";
+    customBaseUrl: string = "";
     customModelName: string = "";
     currentAI: number = 0; // 0: zhipu, 1: deepseek, 2: custom
     autoPreview: boolean = false;

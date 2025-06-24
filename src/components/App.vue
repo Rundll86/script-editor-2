@@ -287,7 +287,7 @@
                         <ContainerFrame v-if="settings.currentAI === 2" title="自定义服务">
                             <LeftRightAlign>
                                 <template #left>
-                                    ApiKey
+                                    Api key
                                 </template>
                                 <template #right>
                                     <input v-model="settings.customApiKey">
@@ -295,10 +295,10 @@
                             </LeftRightAlign>
                             <LeftRightAlign>
                                 <template #left>
-                                    BaseURL
+                                    Base URL
                                 </template>
                                 <template #right>
-                                    <input v-model="settings.customEndPoint">
+                                    <input v-model="settings.customBaseUrl">
                                 </template>
                             </LeftRightAlign>
                             <LeftRightAlign>
@@ -603,7 +603,7 @@ async function checkAPIKey() {
         } else if (settings.value.currentAI === 2) {
             OpenAIProtocol.assignService({
                 key: settings.value.customApiKey,
-                endPoint: settings.value.customEndPoint,
+                baseUrl: settings.value.customBaseUrl,
                 model: settings.value.customModelName
             });
             await OpenAIProtocol.syncMessage([{
@@ -639,7 +639,7 @@ async function askFairy(e: KeyboardEvent) {
     } else if (settings.value.currentAI === 2) {
         OpenAIProtocol.assignService({
             key: settings.value.customApiKey,
-            endPoint: settings.value.customEndPoint,
+            baseUrl: settings.value.customBaseUrl,
             model: settings.value.customModelName
         });
     }
