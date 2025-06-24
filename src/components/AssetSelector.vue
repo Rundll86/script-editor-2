@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { PropType } from "vue";
 import SelectBar from "./SelectBar.vue";
-import { AssetType, ProjectData } from "@/structs";
-defineProps({
+import { Asset, AssetType, ProjectData } from "@/structs";
+const { project, filter } = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
         required: true
@@ -12,8 +12,11 @@ defineProps({
         default: () => ["all"]
     }
 });
+function needFiltOut(asset: Asset) {
+    return !filter.includes(asset.type) && !filter.includes('all')
+}
 </script>
 <template>
     <SelectBar :options="project.assets.map(asset => asset.name)"
-        :hides="project.assets.filter(asset => !filter.includes(asset.type) && !filter.includes('all')).map((_, i) => i)" />
+        :hides="project.assets.map((asset, i) => needFiltOut(asset) ? i : NaN)" />
 </template>
