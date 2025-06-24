@@ -1,5 +1,5 @@
-import "vue";
-import "./structs";
+import { Ref } from "vue";
+import { ProjectData, EditorState, WindowType, Vector, Settings } from "./structs";
 declare global {
     interface Window {
         msg: <T>(type: "info" | "warn" | "error", data: T) => T;

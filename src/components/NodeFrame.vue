@@ -137,7 +137,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
             <SquareButton class="margin-auto-left" @click="project.entryNode = data.id">
                 {{ isEntry ? "◆" : "◇" }}
             </SquareButton>
-            <SquareButton @click="$emit('play')">▶</SquareButton>
+            <SquareButton v-if="window.windowOrders.value.includes('preview')" @click="$emit('play')">▶</SquareButton>
         </div>
         <div class="content">
             <template v-if="data.type !== 'select'">

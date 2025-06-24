@@ -1,4 +1,4 @@
-import { OpenAIProtocol } from "./tools";
+import { limited, OpenAIProtocol } from "./tools";
 export type WindowType = typeof windowTypes[number];
 export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting", "ai", "preview"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
@@ -13,17 +13,49 @@ export interface NormalizedNoun {
     separator: string;
 }
 export class Vector {
-    constructor(public x: number, public y: number) { }
+    get width() { return this.x; }
+    set width(value: number) { this.x = value; }
+    get height() { return this.y; }
+    set height(value: number) { this.y = value; }
+    constructor(public x: number = 0, public y: number = 0) { }
     static get ZERO() {
         return new Vector(0, 0);
     }
-    static create(size: number = 0) {
-        return new Vector(size, size);
+    static create(other: Vector | number = 0) {
+        return typeof other === "number" ? new Vector(other, other) : new Vector(other.x, other.y);
+    }
+    static limited(value: Vector, min: Vector, max: Vector) {
+        return new Vector(
+            limited(min.x, value.x, max.x),
+            limited(min.y, value.y, max.y),
+        );
+    }
+    static equals(a: Vector, b: Vector) {
+        return a.x === b.x && a.y === b.y;
+    }
+    static add(a: Vector, b: Vector) {
+        return new Vector(a.x + b.x, a.y + b.y);
+    }
+    static subtract(a: Vector, b: Vector) {
+        return new Vector(a.x - b.x, a.y - b.y);
+    }
+    static multiply(a: Vector | number, b: Vector | number) {
+        const createA = Vector.create(a);
+        const createB = Vector.create(b);
+        return new Vector(createA.x * createB.x, createA.y * createB.y);
+    }
+    static divide(a: Vector | number, b: Vector | number) {
+        const createA = Vector.create(a);
+        const createB = Vector.create(b);
+        return new Vector(createA.x / createB.x, createA.y / createB.y);
     }
 }
 export class ConstantVector<CX extends number, CY extends number> extends Vector {
     constructor(public readonly x: CX, public readonly y: CY) {
         super(x, y);
+    }
+    static create<T extends number>(size: T) {
+        return new this<T, T>(size, size);
     }
 }
 export class Configurable {
@@ -191,4 +223,5 @@ export class Settings extends Configurable {
     currentAI: number = 0; // 0: zhipu, 1: deepseek, 2: custom
     autoPreview: boolean = false;
     showDebugMenu: boolean = false;
+    previewSize: Vector = new Vector(640, 480);
 }

@@ -332,6 +332,10 @@
                         </LeftRightAlign>
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
                     </ContainerFrame>
+                    <ContainerFrame title="预览">
+                        窗口尺寸
+                        <RectArea v-model:value="settings.previewSize" @update:value="console.log" />
+                    </ContainerFrame>
                     <ContainerFrame title="实验性⚠️慎用">
                         <LeftRightAlign>
                             <template #left>
@@ -356,7 +360,7 @@
                     <ConversationBox :data="editorState.conversation" />
                 </SubWindow>
                 <SubWindow v-else-if="target === 'preview'" :id="'preview'" title="预览">
-                    <ContainerFrame :title="`播放菜单 · ${editorState.playWith ? '播放中' : '空闲'}`"
+                    <ContainerFrame :title="`播放菜单 · ${editorState.playWith ? '运行中' : '空闲'}`"
                         style="margin-bottom: 5px;">
                         <LeftRightAlign>
                             <template #left>
@@ -367,7 +371,7 @@
                             </template>
                         </LeftRightAlign>
                     </ContainerFrame>
-                    <PreviewPlayer :project="project" :playWith="editorState.playWith" />
+                    <PreviewPlayer :project="project" :playWith="editorState.playWith" :size="settings.previewSize" />
                 </SubWindow>
             </div>
         </StaticLayer>
@@ -439,6 +443,7 @@ import prompt from "../prompt.txt";
 import LeftRightAlign from "./LeftRightAlign.vue";
 import PreviewPlayer from "./PreviewPlayer.vue";
 import AssetSelector from "./AssetSelector.vue";
+import RectArea from "./RectArea.vue";
 onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {

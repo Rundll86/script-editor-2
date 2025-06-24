@@ -4,7 +4,7 @@
         height: enable ? height + 'px' : 'auto',
     }">
         <slot></slot>
-        <div v-if="enable" class="resize-handle" @mousedown.stop="startResize">◈</div>
+        <div v-if="enable" class="resize-handle" @mousedown.stop="startResize"></div>
     </div>
 </template>
 <script setup lang="ts">
@@ -56,7 +56,6 @@ window.addEventListener("mousemove", e => {
 });
 window.addEventListener("mousemove", updateResize);
 window.addEventListener("mouseup", endResize);
-
 function startResize(e: TargetAndVector) {
     e.preventDefault();
     isResizing.value = true;
@@ -104,5 +103,19 @@ watch(isResizing, (newResizing) => {
     bottom: 0;
     right: 0;
     cursor: se-resize;
+    transform: translate(50%, 50%) rotate(45deg);
+    background-color: white;
+    border: 1px solid black;
+}
+
+.resize-handle::before {
+    content: "";
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: black;
 }
 </style>
