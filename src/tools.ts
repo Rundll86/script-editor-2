@@ -460,9 +460,9 @@ type BaseEventMap = HTMLElementEventMap;
 type EventMapper = {
     [K in keyof BaseEventMap as `${PrefixType}${Capitalize<K>}`]: Promise<BaseEventMap[K]>
 };
-export function listen(elementOrSelector: string, signal?: AbortSignal): EventMapper | undefined;
-export function listen(elementOrSelector: HTMLElement, signal?: AbortSignal): EventMapper;
-export function listen(elementOrSelector: HTMLElement | string, signal?: AbortSignal): EventMapper | undefined {
+export function listen(elementOrSelector: string, options?: AddEventListenerOptions): EventMapper | undefined;
+export function listen(elementOrSelector: HTMLElement, options?: AddEventListenerOptions): EventMapper;
+export function listen(elementOrSelector: HTMLElement | string, options: AddEventListenerOptions & { signal?: AbortSignal } = {}): EventMapper | undefined {
     const element = typeof elementOrSelector === "string" ? document.querySelector<HTMLElement>(elementOrSelector) : elementOrSelector;
     if (!element) return;
     return new Proxy({} as EventMapper, {
@@ -470,9 +470,9 @@ export function listen(elementOrSelector: HTMLElement | string, signal?: AbortSi
             if (p.startsWith(prefix) && p.length > prefix.length) {
                 return new Promise<BaseEventMap[T]>((resolve, reject) => {
                     element.addEventListener(p.slice(prefix.length).toLowerCase() as T, (e) => {
-                        if (signal?.aborted) reject(new Error("aborted"));
+                        if (options.signal?.aborted) reject(new Error("aborted"));
                         else resolve(e);
-                    }, { once: true });
+                    }, Object.assign({}, options, { once: true }));
                 });
             }
         }
