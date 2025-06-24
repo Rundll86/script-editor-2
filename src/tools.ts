@@ -454,3 +454,27 @@ export function refObjectUrl(executor: () => ArrayBuffer | null) {
     rebuild(executor());
     return result;
 }
+const prefix = "on";
+type PrefixType = typeof prefix;
+type BaseEventMap = HTMLElementEventMap;
+type EventMapper = {
+    [K in keyof BaseEventMap as `${PrefixType}${K}`]: Promise<BaseEventMap[K]>
+};
+export function listen(elementOrSelector: string, signal?: AbortSignal): EventMapper | undefined;
+export function listen(elementOrSelector: HTMLElement, signal?: AbortSignal): EventMapper;
+export function listen(elementOrSelector: HTMLElement | string, signal?: AbortSignal): EventMapper | undefined {
+    const element = typeof elementOrSelector === "string" ? document.querySelector<HTMLElement>(elementOrSelector) : elementOrSelector;
+    if (!element) return;
+    return new Proxy({} as EventMapper, {
+        get<T extends keyof BaseEventMap>(_: {}, p: string) {
+            if (p.startsWith(prefix) && p.length > prefix.length) {
+                return new Promise<BaseEventMap[T]>((resolve, reject) => {
+                    element.addEventListener(p.slice(prefix.length).toLowerCase() as T, (e) => {
+                        if (signal?.aborted) reject(new Error("aborted"));
+                        else resolve(e);
+                    }, { once: true });
+                });
+            }
+        }
+    });
+}
