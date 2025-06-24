@@ -333,7 +333,7 @@
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
                     </ContainerFrame>
                     <ContainerFrame title="预览">
-                        窗口尺寸
+                        舞台尺寸
                         <RectArea v-model:value="settings.previewSize" @update:value="console.log" />
                     </ContainerFrame>
                     <ContainerFrame title="实验性⚠️慎用">
