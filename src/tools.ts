@@ -454,11 +454,11 @@ export function refObjectUrl(executor: () => ArrayBuffer | null) {
     rebuild(executor());
     return result;
 }
-const prefix = "on";
+const prefix = "after";
 type PrefixType = typeof prefix;
 type BaseEventMap = HTMLElementEventMap;
 type EventMapper = {
-    [K in keyof BaseEventMap as `${PrefixType}${K}`]: Promise<BaseEventMap[K]>
+    [K in keyof BaseEventMap as `${PrefixType}${Capitalize<K>}`]: Promise<BaseEventMap[K]>
 };
 export function listen(elementOrSelector: string, signal?: AbortSignal): EventMapper | undefined;
 export function listen(elementOrSelector: HTMLElement, signal?: AbortSignal): EventMapper;
