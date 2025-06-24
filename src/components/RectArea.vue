@@ -7,7 +7,7 @@
                 <div class="arrow vertical"></div>
             </ResizableContainer>
         </div>
-        <div class="values">
+        <div class="values" v-if="values">
             <span class="text">
                 {{ min.x.toFixed(0) }}~{{ max.x.toFixed(0) }}
                 ×
@@ -42,7 +42,8 @@ const { min, value, max } = defineProps({
     max: {
         type: Vector,
         default: () => Vector.create(10 ** 3)
-    }
+    },
+    values: Boolean
 });
 const emit = defineEmits(["update:value"]);
 const ratioSize = ref(uncast(value));
@@ -85,7 +86,7 @@ function uncast(castedSize: Vector) {
 }
 
 .outer {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 10px;
 }

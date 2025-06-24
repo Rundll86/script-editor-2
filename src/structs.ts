@@ -224,4 +224,5 @@ export class Settings extends Configurable {
     autoPreview: boolean = false;
     showDebugMenu: boolean = false;
     previewSize: Vector = new Vector(640, 480);
+    showPreviewSizeInfo: boolean = false;
 }

@@ -333,8 +333,22 @@
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
                     </ContainerFrame>
                     <ContainerFrame title="预览">
-                        舞台尺寸
-                        <RectArea v-model:value="settings.previewSize" />
+                        <LeftRightAlign>
+                            <template #left>
+                                显示尺寸信息？
+                            </template>
+                            <template #right>
+                                <Checkbox v-model="settings.showPreviewSizeInfo" />
+                            </template>
+                        </LeftRightAlign>
+                        <LeftRightAlign>
+                            <template #left>
+                                舞台尺寸
+                            </template>
+                            <template #right>
+                                <RectArea :values="settings.showPreviewSizeInfo" v-model:value="settings.previewSize" />
+                            </template>
+                        </LeftRightAlign>
                     </ContainerFrame>
                     <ContainerFrame title="实验性⚠️慎用">
                         <LeftRightAlign>
@@ -375,13 +389,11 @@
                 </SubWindow>
             </div>
         </StaticLayer>
-        <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
-            info: message.type === 'info',
-            warn: message.type === 'warn',
-            error: message.type === 'error'
-        }" @animationend="deleteSelfMessage(index)">
-            {{ message.data }}
-        </div>
+        <template :key="index" v-for="message, index in editorState.messages">
+            <div class="message" :class="{ [message.type]: true }" @animationend="deleteSelfMessage(index)">
+                {{ message.data }}
+            </div>
+        </template>
     </div>
 </template>
 <script setup lang="ts">
