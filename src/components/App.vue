@@ -334,7 +334,7 @@
                     </ContainerFrame>
                     <ContainerFrame title="预览">
                         舞台尺寸
-                        <RectArea v-model:value="settings.previewSize" @update:value="console.log" />
+                        <RectArea v-model:value="settings.previewSize" />
                     </ContainerFrame>
                     <ContainerFrame title="实验性⚠️慎用">
                         <LeftRightAlign>

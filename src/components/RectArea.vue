@@ -8,19 +8,18 @@
             </ResizableContainer>
         </div>
         <div class="values">
-            <span class="text">
-                {{ min.width.toFixed(0) }}
-                /
-                {{ castedSize.width.toFixed(0) }}
-                /
-                {{ max.width.toFixed(0) }}
+            <span>
+                {{ min.x.toFixed(0) }} × {{ min.y.toFixed(0) }}
             </span>
-            <span class="text">
-                {{ min.height.toFixed(0) }}
-                /
-                {{ castedSize.height.toFixed(0) }}
-                /
-                {{ max.height.toFixed(0) }}
+            ↆ
+            <span>
+                <InputBoxButFitWidth :castFunction="Number" v-model="ratioSize.width" />%
+                ×
+                <InputBoxButFitWidth :castFunction="Number" v-model="ratioSize.height" />%
+            </span>
+            ↆ
+            <span>
+                {{ max.x.toFixed(0) }} × {{ max.y.toFixed(0) }}
             </span>
         </div>
     </div>
@@ -29,6 +28,7 @@
 import { Vector } from '@/structs';
 import { computed, ref, watch } from 'vue';
 import ResizableContainer from './ResizableContainer.vue';
+import InputBoxButFitWidth from './InputBoxButFitWidth.vue';
 const { min, value, max } = defineProps({
     min: {
         type: Vector,
