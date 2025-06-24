@@ -11,7 +11,7 @@ button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    transition: all 0.2s ease-out;
+
     border-radius: 5px;
     margin-left: 5px;
 }

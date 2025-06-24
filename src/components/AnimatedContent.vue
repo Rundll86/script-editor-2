@@ -37,7 +37,7 @@ watch(() => props.content, (newValue) => {
 
 .part {
     position: absolute;
-    transition: all 0.3s ease-in-out;
+
     opacity: 1;
     transform: translateY(0);
     text-wrap: nowrap;

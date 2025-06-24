@@ -30,7 +30,7 @@ function toggle() {
     transform: scale(0);
     interpolate-size: allow-keywords;
     transform-origin: 50% 0;
-    transition: all 0.3s ease-in-out;
+
     overflow: visible;
 }
 

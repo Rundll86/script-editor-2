@@ -157,7 +157,7 @@ watch(() => props.max, (newV, oldV) => {
     text-wrap: nowrap;
     padding: 2px 4px;
     border-radius: 5px;
-    transition: all .2s ease-out;
+
     pointer-events: none;
     background-color: rgba(0, 0, 0, 0.1);
     opacity: 0;
@@ -205,7 +205,7 @@ watch(() => props.max, (newV, oldV) => {
     background-color: transparent;
     opacity: 0;
     border: 1px solid rgb(120, 120, 120);
-    transition: all .2s ease-out;
+
 }
 
 .block {

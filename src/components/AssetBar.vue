@@ -51,7 +51,7 @@ async function uploadAsset() {
     opacity: 0;
     transform: scaleY(0);
     transform-origin: 50% 0;
-    transition: all 0.2s ease-out;
+
     display: flex;
     flex-direction: column;
     align-items: center;

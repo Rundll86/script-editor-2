@@ -13,13 +13,14 @@ button {
     margin: 0 5px;
     border-bottom: 1px solid gray;
     border-radius: 5px;
+    transition-duration: .1s;
 }
 
 button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.15);
 }
 
 button:active {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.25);
 }
 </style>

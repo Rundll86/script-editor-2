@@ -798,7 +798,7 @@ watch(settings, (newV) => {
     box-sizing: border-box;
     border: none;
     outline: none;
-    transition: none;
+    transition: all .2s ease-out;
     font-family: '微软雅黑';
 }
 

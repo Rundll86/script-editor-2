@@ -8,18 +8,19 @@
             </ResizableContainer>
         </div>
         <div class="values">
-            <span>
-                {{ min.x.toFixed(0) }} × {{ min.y.toFixed(0) }}
-            </span>
-            ↆ
-            <span>
-                <InputBoxButFitWidth :castFunction="Number" v-model="ratioSize.width" />%
+            <span class="text">
+                {{ min.x.toFixed(0) }}~{{ max.x.toFixed(0) }}
                 ×
-                <InputBoxButFitWidth :castFunction="Number" v-model="ratioSize.height" />%
+                <InputBoxButFitWidth :sweeper="Number.isNaN" :caster="Number" v-model="ratioSize.width" />%
+                =
+                {{ castedSize.width }}
             </span>
-            ↆ
-            <span>
-                {{ max.x.toFixed(0) }} × {{ max.y.toFixed(0) }}
+            <span class="text">
+                {{ min.y.toFixed(0) }}~{{ max.y.toFixed(0) }}
+                ×
+                <InputBoxButFitWidth :sweeper="Number.isNaN" :caster="Number" v-model="ratioSize.height" />%
+                =
+                {{ castedSize.height }}
             </span>
         </div>
     </div>
@@ -86,7 +87,7 @@ function uncast(castedSize: Vector) {
 .outer {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
 .editor {
@@ -105,6 +106,7 @@ function uncast(castedSize: Vector) {
 .values {
     display: flex;
     flex-direction: column;
+    gap: 3px;
 }
 
 .horizontal {
@@ -145,5 +147,11 @@ function uncast(castedSize: Vector) {
     bottom: 0;
     left: 50%;
     transform: translate(-50%, 50%) rotate(180deg);
+}
+
+.text {
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 </style>

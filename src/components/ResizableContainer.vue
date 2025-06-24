@@ -1,5 +1,5 @@
 <template>
-    <div class="resizable" :style="{
+    <div class="resizable" :class="{ isResizing }" :style="{
         width: enable ? width + 'px' : 'auto',
         height: enable ? height + 'px' : 'auto',
     }">
@@ -94,18 +94,41 @@ watch(isResizing, (newResizing) => {
 .resizable {
     position: relative;
     display: inline-block;
+    transition: none;
+}
+
+@property --size {
+    initial-value: 0px;
+    syntax: "<length>";
+    inherits: false;
+}
+
+@property --angle {
+    initial-value: 0deg;
+    syntax: "<angle>";
+    inherits: false;
 }
 
 .resize-handle {
+    --size: 20px;
+    --angle: 135deg;
+    opacity: 0;
     position: absolute;
-    width: 10px;
-    height: 10px;
+    width: var(--size);
+    height: var(--size);
     bottom: 0;
     right: 0;
     cursor: se-resize;
-    transform: translate(50%, 50%) rotate(45deg);
+    transform: translate(50%, 50%) rotate(var(--angle));
     background-color: white;
     border: 1px solid black;
+}
+
+.resize-handle:hover,
+.resizable.isResizing .resize-handle {
+    --size: 10px;
+    --angle: 45deg;
+    opacity: 1;
 }
 
 .resize-handle::before {

@@ -33,7 +33,9 @@ span::before {
             100% 0%,
             100% 30%,
             50% 100%);
-    transition: all .1s ease-out;
+
+    transition-duration: .1s;
+
 }
 
 span.checked::before {

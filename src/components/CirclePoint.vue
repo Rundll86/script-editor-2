@@ -11,7 +11,6 @@ defineProps({ normal: Boolean });
     background-color: rgba(0, 0, 0, 0.1);
     width: 15px;
     height: 15px;
-    transition: all .2s ease-out;
     transform: scale(1);
     display: inline-block;
     margin: 0 2px;
