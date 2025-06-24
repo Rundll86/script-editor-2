@@ -8,8 +8,9 @@
                 v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
                 <NodeFrame v-for="node, index in project.nodes" :key="node.id"
-                    @delete="window.keyboard.shift ? deleteNodeAndChildren(index) : deleteNode(index)" :data="node"
-                    :project="project" :settings="settings" @mousedown="moveNodeToFirst(index)" />
+                    @delete="window.keyboard.shift ? deleteNodeAndChildren(index) : deleteNode(index)"
+                    @play="editorState.playWith = node.id" :data="node" :project="project" :settings="settings"
+                    @mousedown="moveNodeToFirst(index)" />
                 <canvas ref="stage" class="fullscreen focus-pass"></canvas>
             </DraggableContainer>
         </StaticLayer>
@@ -353,6 +354,20 @@
                     <SmallButton @click="clearConversation">新建对话</SmallButton>
                     <ConversationBox :data="editorState.conversation" />
                 </SubWindow>
+                <SubWindow v-else-if="target === 'preview'" :id="'preview'" title="预览">
+                    <ContainerFrame :title="`播放菜单 · ${editorState.playWith ? '播放中' : '空闲'}`"
+                        style="margin-bottom: 5px;">
+                        <LeftRightAlign>
+                            <template #left>
+                                <SmallButton @click="editorState.playWith = project.entryNode">▶ 入口节点</SmallButton>
+                            </template>
+                            <template #right v-if="editorState.playWith">
+                                <SmallButton @click="editorState.playWith = null">⏹ 停止播放</SmallButton>
+                            </template>
+                        </LeftRightAlign>
+                    </ContainerFrame>
+                    <PreviewPlayer :project="project" :playWith="editorState.playWith" />
+                </SubWindow>
             </div>
         </StaticLayer>
         <div :key="index" v-for="message, index in editorState.messages" class="message" :class="{
@@ -421,6 +436,7 @@ import RangeBar from "./RangeBar.vue";
 import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
 import LeftRightAlign from "./LeftRightAlign.vue";
+import PreviewPlayer from "./PreviewPlayer.vue";
 onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {

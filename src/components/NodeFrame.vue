@@ -8,7 +8,7 @@ import CirclePoint from "./CirclePoint.vue";
 import OptionLabel from "./OptionLabel.vue";
 import OptionList from "./OptionList.vue";
 import SquareButton from "./SquareButton.vue";
-import { createObjectURL, NodeState } from "@/tools";
+import { createObjectURL, NodeState, refObjectUrl } from "@/tools";
 import DeskableContainer from "./DeskableContainer.vue";
 import SmallButton from "./SmallButton.vue";
 import ResizableContainer from "./ResizableContainer.vue";
@@ -32,9 +32,8 @@ const connectingIndex = ref(0);
 const connectingPoint = computed(() => {
     return data.outPoints[connectingIndex.value];
 });
-const avatarData = computed(() => {
-    return project.assets[project.characters[data.talker ?? 0]?.feelings[data.feeling ?? 0]]?.data;
-});
+const avatarData = computed(() => project.assets[project.characters[data.talker ?? 0]?.feelings[data.feeling ?? 0]]?.data);
+const cachedAvatarURL = refObjectUrl(() => avatarData.value as ArrayBuffer);
 const myAsset: ComputedRef<Asset | undefined> = computed(() => {
     return project.assets[data.assetId ?? 0];
 });
@@ -59,20 +58,9 @@ const previewText = computed(() => {
 });
 const isEntry = computed(() => project.entryNode === data.id);
 const children = computed(() => NodeState.getChildren(data, project)) as ComputedRef<NodeScript[]>;
-const cachedAvatarURL = ref("");
-watch(avatarData, rebuildAvatarUrl);
 onMounted(() => {
-    rebuildAvatarUrl();
     window.addEventListener("mouseup", endConnect);
 });
-function rebuildAvatarUrl() {
-    try {
-        URL.revokeObjectURL(cachedAvatarURL.value)
-    } catch (e) {
-        console.error(e);
-    };
-    cachedAvatarURL.value = createObjectURL(avatarData.value);
-}
 function createOutPoint() {
     data.outPoints.push(new OutPoint());
 };
@@ -148,6 +136,7 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
             <SquareButton class="margin-auto-left" @click="project.entryNode = data.id">
                 {{ isEntry ? "◆" : "◇" }}
             </SquareButton>
+            <SquareButton @click="$emit('play')">▶</SquareButton>
         </div>
         <div class="content">
             <template v-if="data.type !== 'select'">

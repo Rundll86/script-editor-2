@@ -1,6 +1,7 @@
 import { NodeScript, ProjectData, Vector } from "./structs";
 import unknownImage from "./assets/unknown-image.png";
 import { marked } from "marked";
+import { ref, watch } from "vue";
 export function uuid() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
@@ -438,4 +439,18 @@ export namespace NodeState {
 }
 export async function milliseconds(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+export function refObjectUrl(executor: () => ArrayBuffer | null) {
+    function rebuild(buffer: ArrayBuffer | null) {
+        try {
+            URL.revokeObjectURL(result.value);
+        } catch (e) {
+            console.error(e);
+        }
+        result.value = createObjectURL(buffer);
+    }
+    const result = ref("");
+    watch(executor, rebuild);
+    rebuild(executor());
+    return result;
 }

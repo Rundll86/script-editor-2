@@ -1,6 +1,6 @@
 import { OpenAIProtocol } from "./tools";
 export type WindowType = typeof windowTypes[number];
-export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting", "ai"] as const;
+export const windowTypes = ["node", "world", "asset", "project", "variable", "about", "setting", "ai", "preview"] as const;
 export const nodeTypes = ["talk", "select", "media", "script"] as const;
 export const nodeTypeNames = ["对话", "选择", "展示媒体", "执行脚本"];
 export type NodeType = typeof nodeTypes[number];
@@ -175,6 +175,7 @@ export class EditorState extends Configurable {
     conversation: OpenAIProtocol.MessageContext[] = [];
     askingMessage: string = "帮我写个对话";
     responsing: boolean = false;
+    playWith: string | null = null;
 }
 export class Settings extends Configurable {
     lineType: number = 1; // 0: straight, 1: curved
@@ -190,4 +191,8 @@ export class Settings extends Configurable {
     currentAI: number = 0; // 0: zhipu, 1: deepseek, 2: custom
     autoPreview: boolean = false;
     showDebugMenu: boolean = false;
+}
+export class PlayerVM {
+    currentBackground: ArrayBuffer | null = null;
+    currentNode: string | null = null;
 }

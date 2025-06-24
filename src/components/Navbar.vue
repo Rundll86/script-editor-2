@@ -6,6 +6,7 @@
         <SmallButton @dblclick="window.dragToZero('asset')" @click="window.openWindow('asset')">📦资源</SmallButton>
         <SmallButton @dblclick="window.dragToZero('variable')" @click="window.openWindow('variable')">📜变量</SmallButton>
         <SmallButton class="end" @dblclick="window.dragToZero('ai')" @click="window.openWindow('ai')">🧿仙灵</SmallButton>
+        <SmallButton @dblclick="window.dragToZero('preview')" @click="window.openWindow('preview')">🕹️预览</SmallButton>
         <SmallButton class="end" @dblclick="window.dragToZero('project')" @click="window.openWindow('project')">
             🗂️项目
         </SmallButton>
