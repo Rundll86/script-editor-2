@@ -52,7 +52,7 @@
                                     <SelectBar :options="project.feelings"
                                         v-model:selected="character.selectingFeeling" />
                                     资源：
-                                    <SelectBar nullable :options="project.assets.map(asset => asset.name)"
+                                    <AssetSelector :project="project" :filter="['image']"
                                         v-model:selected="character.feelings[character.selectingFeeling]" />
                                 </template>
                             </DeskableContainer>
@@ -438,6 +438,7 @@ import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
 import LeftRightAlign from "./LeftRightAlign.vue";
 import PreviewPlayer from "./PreviewPlayer.vue";
+import AssetSelector from "./AssetSelector.vue";
 onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {
@@ -646,7 +647,7 @@ function saveSettingsToCookie() {
     window.msg("info", "保存成功！");
 }
 function loadSettingsFromCookie() {
-    const settingsCookie = document.cookie.match('(^|;)\\s*se_settings\\s*=\\s*([^;]+)');
+    const settingsCookie = document.cookie.match("(^|;)\\s*se_settings\\s*=\\s*([^;]+)");
     if (settingsCookie) {
         settings.value = JSON.parse(decodeURIComponent(settingsCookie[2]));
         window.msg("info", "加载成功！");

@@ -6,9 +6,9 @@
     </div>
 </template>
 <script setup lang="ts">
-import { NodeScript, ProjectData } from '@/structs';
-import { refObjectUrl } from '@/tools';
-import { computed, PropType } from 'vue';
+import { NodeScript, ProjectData } from "@/structs";
+import { refObjectUrl } from "@/tools";
+import { computed, PropType } from "vue";
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,

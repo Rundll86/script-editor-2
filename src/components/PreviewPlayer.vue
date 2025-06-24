@@ -22,7 +22,8 @@
                 </div>
             </div>
             <div class="options" v-if="currentNode?.type === 'select'">
-                <div class="option" v-for="option in currentNode.outPoints" @click.stop="playFrom(option.nextId)">
+                <div class="option" :key="option.label" v-for="option in currentNode.outPoints"
+                    @click.stop="playFrom(option.nextId)">
                     {{ option.label }}
                 </div>
             </div>
@@ -30,10 +31,10 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ProjectData, Vector } from '@/structs';
-import { refObjectUrl } from '@/tools';
-import { computed, PropType, ref, watch } from 'vue';
-import AvatarPreview from './AvatarPreview.vue';
+import { ProjectData, Vector } from "@/structs";
+import { refObjectUrl } from "@/tools";
+import { computed, PropType, ref, watch } from "vue";
+import AvatarPreview from "./AvatarPreview.vue";
 const props = defineProps({
     project: {
         type: Object as PropType<ProjectData>,
@@ -52,7 +53,6 @@ const currentNodeId = ref<string | null>("");
 const currentNode = computed(() => props.project.nodes.find(node => node.id === currentNodeId.value));
 const currentBackground = computed(() => currentNode.value?.type === "media" ? props.project.assets[currentNode.value.assetId as number] : null);
 const backgroundUrl = refObjectUrl(() => currentBackground.value?.data as ArrayBuffer);
-const avatarUrl = refObjectUrl(() => props.project.assets[props.project.characters[currentNode.value?.talker ?? 0]?.feelings[currentNode.value?.feeling ?? 0]]?.data as ArrayBuffer);
 watch(() => props.playWith, playFrom);
 function playFrom(id: string | null) {
     currentNodeId.value = id;

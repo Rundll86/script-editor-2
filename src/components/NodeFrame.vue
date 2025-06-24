@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch, type ComputedRef, type PropType } from "vue";
+import { computed, onMounted, ref, type ComputedRef, type PropType } from "vue";
 import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
 import { nodeTypeNames, nodeTypes, OutPoint, Settings } from "@/structs";
 import DraggableContainer from "./DraggableContainer.vue";
@@ -8,12 +8,13 @@ import CirclePoint from "./CirclePoint.vue";
 import OptionLabel from "./OptionLabel.vue";
 import OptionList from "./OptionList.vue";
 import SquareButton from "./SquareButton.vue";
-import { createObjectURL, NodeState, refObjectUrl } from "@/tools";
+import { createObjectURL, NodeState } from "@/tools";
 import DeskableContainer from "./DeskableContainer.vue";
 import SmallButton from "./SmallButton.vue";
 import ResizableContainer from "./ResizableContainer.vue";
 import ContainerFrame from "./ContainerFrame.vue";
 import AvatarPreview from "./AvatarPreview.vue";
+import AssetSelector from "./AssetSelector.vue";
 const { data, project } = defineProps({
     data: {
         type: Object as PropType<NodeScript>,
@@ -145,11 +146,11 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
             </template>
             <div class="node-part" v-if="data.type === 'script'">
                 选择脚本：
-                <SelectBar :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
+                <AssetSelector :project="project" :filter="['script']" v-model:selected="data.assetId" />
             </div>
             <div class="node-part" v-if="data.type === 'media'">
                 选择资源：
-                <SelectBar :options="project.assets.map(asset => asset.name)" v-model:selected="data.assetId" />
+                <AssetSelector :project="project" :filter="['image', 'video']" v-model:selected="data.assetId" />
                 <DeskableContainer class="asset-select">
                     <template #toggler="props">
                         <SmallButton>
