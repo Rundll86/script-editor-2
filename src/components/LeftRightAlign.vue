@@ -13,7 +13,7 @@
     display: flex;
     margin: 2px 0;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
 }
 
 .left {

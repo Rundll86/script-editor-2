@@ -284,7 +284,33 @@
                         <RangeBar :max="window.innerHeight * 0.8" v-model:value="settings.createNodeOffset" />
                     </ContainerFrame>
                     <ContainerFrame title="仙灵">
-                        <LeftRightAlign>
+                        <ContainerFrame v-if="settings.currentAI === 2" title="自定义服务">
+                            <LeftRightAlign>
+                                <template #left>
+                                    ApiKey
+                                </template>
+                                <template #right>
+                                    <input v-model="settings.customApiKey">
+                                </template>
+                            </LeftRightAlign>
+                            <LeftRightAlign>
+                                <template #left>
+                                    BaseURL
+                                </template>
+                                <template #right>
+                                    <input v-model="settings.customEndPoint">
+                                </template>
+                            </LeftRightAlign>
+                            <LeftRightAlign>
+                                <template #left>
+                                    模型编码
+                                </template>
+                                <template #right>
+                                    <input v-model="settings.customModelName">
+                                </template>
+                            </LeftRightAlign>
+                        </ContainerFrame>
+                        <LeftRightAlign v-else>
                             <template #left>
                                 ApiKey
                             </template>
@@ -298,7 +324,8 @@
                                 使用模型
                             </template>
                             <template #right>
-                                <SelectBar :options="['智谱清言', 'DeepSeek']" v-model:selected="settings.currentAI" />
+                                <SelectBar :options="['智谱清言', 'DeepSeek', '自定义']"
+                                    v-model:selected="settings.currentAI" />
                             </template>
                         </LeftRightAlign>
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
@@ -573,6 +600,16 @@ async function checkAPIKey() {
                 role: "user",
                 content: "你好！"
             }]);
+        } else if (settings.value.currentAI === 2) {
+            OpenAIProtocol.assignService({
+                key: settings.value.customApiKey,
+                endPoint: settings.value.customEndPoint,
+                model: settings.value.customModelName
+            });
+            await OpenAIProtocol.syncMessage([{
+                role: "user",
+                content: "你好！"
+            }]);
         }
         window.msg("info", "API 密钥校验通过");
     } catch (e) {
@@ -599,6 +636,12 @@ async function askFairy(e: KeyboardEvent) {
     } else if (settings.value.currentAI === 1) {
         OpenAIProtocol.assignService({ key: settings.value.deepseekApiKey });
         OpenAIProtocol.assignService(OpenAIProtocol.PresetServices.DeepSeek);
+    } else if (settings.value.currentAI === 2) {
+        OpenAIProtocol.assignService({
+            key: settings.value.customApiKey,
+            endPoint: settings.value.customEndPoint,
+            model: settings.value.customModelName
+        });
     }
     const result = await OpenAIProtocol.streamMessage([{
         role: "system",

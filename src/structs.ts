@@ -184,7 +184,10 @@ export class Settings extends Configurable {
     createNodeOffset: number = 100;
     zhipuApiKey: string = "";
     deepseekApiKey: string = "";
-    currentAI: number = 0; // 0: zhipu, 1: deepseek
+    customApiKey: string = "";
+    customEndPoint: string = "";
+    customModelName: string = "";
+    currentAI: number = 0; // 0: zhipu, 1: deepseek, 2: custom
     autoPreview: boolean = false;
     showDebugMenu: boolean = false;
 }
