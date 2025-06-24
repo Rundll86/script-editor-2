@@ -330,7 +330,7 @@
                         </LeftRightAlign>
                         <WideButton superwide @click="checkAPIKey">验证可用性</WideButton>
                     </ContainerFrame>
-                    <ContainerFrame title="调试">
+                    <ContainerFrame title="实验性⚠️慎用">
                         <LeftRightAlign>
                             <template #left>
                                 显示调试菜单（强制）
@@ -339,6 +339,12 @@
                                 <Checkbox v-model="settings.showDebugMenu" />
                             </template>
                         </LeftRightAlign>
+                        <template v-if="window.isDesktop">
+                        </template>
+                        <template v-else>
+                            <WideButton superwide @click="saveSettingsToCookie">将设置储存到Cookie</WideButton>
+                            <WideButton superwide @click="loadSettingsFromCookie">从Cookie加载设置</WideButton>
+                        </template>
                     </ContainerFrame>
                 </SubWindow>
                 <SubWindow v-else-if="target === 'ai'" :id="'ai'" title="向仙灵询问">
@@ -611,9 +617,22 @@ async function checkAPIKey() {
                 content: "你好！"
             }]);
         }
-        window.msg("info", "API 密钥校验通过");
+        window.msg("info", "API 密钥校验通过！");
     } catch (e) {
         window.msg("error", e);
+    }
+}
+function saveSettingsToCookie() {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000); // 7天过期
+    document.cookie = `se_settings=${encodeURIComponent(JSON.stringify(settings.value))}; expires=${expires.toUTCString()}; path=/`;
+    window.msg("info", "保存成功！");
+}
+function loadSettingsFromCookie() {
+    const settingsCookie = document.cookie.match('(^|;)\\s*se_settings\\s*=\\s*([^;]+)');
+    if (settingsCookie) {
+        settings.value = JSON.parse(decodeURIComponent(settingsCookie[2]));
+        window.msg("info", "加载成功！");
     }
 }
 async function askFairy(e: KeyboardEvent) {
