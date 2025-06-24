@@ -389,7 +389,7 @@
                 </SubWindow>
             </div>
         </StaticLayer>
-        <template :key="index" v-for="message, index in editorState.messages">
+        <template :key="message.data" v-for="message, index in editorState.messages">
             <div class="message" :class="{ [message.type]: true }" @animationend="deleteSelfMessage(index)">
                 {{ message.data }}
             </div>
