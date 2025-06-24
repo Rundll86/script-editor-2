@@ -14,6 +14,6 @@ defineProps({
 });
 </script>
 <template>
-    <SelectBar
-        :options="project.assets.filter(asset => [...filter, 'all'].includes(asset.type)).map(asset => asset.name)" />
+    <SelectBar :options="project.assets.map(asset => asset.name)"
+        :hides="project.assets.filter(asset => !filter.includes(asset.type) && !filter.includes('all')).map((_, i) => i)" />
 </template>

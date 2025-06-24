@@ -13,7 +13,7 @@
                 width: optionsbarRect?.width + 'px'
             }">
                 <div :key="index" v-for="option, index in options">
-                    <div class="option" v-if="valid(option)" @click="select(index)">
+                    <div class="option" v-if="valid(option) && !hides.includes(index)" @click="select(index)">
                         <span v-if="index === selected">▸</span>
                         {{ option }}
                         <span v-if="index === selected">◂</span>
@@ -46,6 +46,10 @@ const props = defineProps({
     nullable: { // 是否可以不选择任何选项
         type: Boolean,
         default: false
+    },
+    hides: { // 隐藏哪些选项
+        type: Array as PropType<number[]>,
+        default: () => []
     }
 });
 const noOptionTip = "⚠️无有效选项";
