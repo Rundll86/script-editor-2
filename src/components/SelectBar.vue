@@ -1,6 +1,6 @@
 <template>
     <div class="selector">
-        <span class="current" @click="opening = !opening">
+        <span class="current" @click="toggle">
             <AnimatedContent class="label" :content="selectedText" />
             <SquareButton class="searcher" @click.stop="searching = !searching">🔍</SquareButton>
             <input v-if="searching" @click.stop type="text" v-model="filter" placeholder="Search..." />
@@ -13,7 +13,8 @@
                 width: optionsbarRect?.width + 'px'
             }">
                 <div :key="index" v-for="option, index in options">
-                    <div class="option" v-if="valid(option) && !hides.includes(index)" @click="select(index)">
+                    <div class="option" v-if="valid(option) && !hides.includes(index)" @click="select(index)"
+                        @mouseover="emit('update:followIndex', index)" @mouseout="emit('update:followIndex', -1)">
                         <span v-if="index === selected">▸</span>
                         {{ option }}
                         <span v-if="index === selected">◂</span>
@@ -33,14 +34,15 @@ import { computed, onMounted, onUnmounted, ref, watch, type PropType } from "vue
 import SquareButton from "./SquareButton.vue";
 import AnimatedContent from "./AnimatedContent.vue";
 import { everyFrame } from "@/tools";
-const emit = defineEmits(["update:selected"]);
+type OptionArray = readonly string[];
+const emit = defineEmits(["update:selected", "update:followIndex", "open", "close"]);
 const props = defineProps({
     options: {
-        type: Array as PropType<readonly string[]>,
-        default: () => ["Option A", "Option B", "Option C"]
+        type: Array as PropType<OptionArray>,
+        default: () => []
     },
     selected: {
-        type: Number,
+        type: [String, Number] as PropType<number>,
         default: 0
     },
     nullable: { // 是否可以不选择任何选项
@@ -50,6 +52,18 @@ const props = defineProps({
     hides: { // 隐藏哪些选项
         type: Array as PropType<number[]>,
         default: () => []
+    },
+    followIndex: {
+        type: Number,
+        default: -1
+    },
+    modelCaster: {
+        type: Function as PropType<(index: number, options: OptionArray) => any>,
+        default: (index: number) => index
+    },
+    bindCaster: {
+        type: Function as PropType<(value: any, options: OptionArray) => number>,
+        default: (value: number) => value
     }
 });
 const noOptionTip = "⚠️无有效选项";
@@ -69,16 +83,23 @@ function select<T extends number>(index: T): T | -1 {
     selected.value = index;
     opening.value = false;
     return index;
-};
+}
 function valid(text: string) {
     return !searching.value || text.toLowerCase().includes(filter.value.toLowerCase().trim());
-};
+}
+function toggle() {
+    opening.value = !opening.value;
+    if (opening.value) emit("open");
+    else emit("close");
+}
 watch(() => props.selected, (newValue) => {
-    selected.value = newValue;
+    const casted = props.bindCaster(newValue, props.options);
+    if (selected.value === casted) return;
+    selected.value = casted;
 });
 watch(selected, (newValue, oldValue) => {
     if (newValue === oldValue) return;
-    emit("update:selected", newValue);
+    emit("update:selected", props.modelCaster(newValue, props.options));
 });
 everyFrame((stop) => {
     rafStoper = stop;

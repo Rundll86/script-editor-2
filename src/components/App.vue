@@ -7,7 +7,8 @@
             <DraggableContainer region-style="grab" region-drag-style="grabbing" v-model:x="editorState.workspace.x"
                 v-model:y="editorState.workspace.y">
                 <div class="fullscreen" data-region="true"></div>
-                <NodeFrame v-for="node, index in project.nodes" :key="node.id"
+                <NodeFrame :class="{ following: editorState.cursorFollowingIndex === index }" :editor="editorState"
+                    v-for="node, index in project.nodes" :key="node.id"
                     @delete="window.keyboard.shift ? deleteNodeAndChildren(index) : deleteNode(index)"
                     @play="editorState.playWith = node.id" :data="node" :project="project" :settings="settings"
                     @mousedown="moveNodeToFirst(index)" />
@@ -375,12 +376,19 @@
                 </SubWindow>
                 <SubWindow v-else-if="target === 'preview'" :id="'preview'" title="预览">
                     <ContainerFrame title="预览路径">
-                        <SmallButton @click="editorState.connectingPath = true">开始编辑</SmallButton>
-                        <ContainerFrame title="路径列表">
-                            <div v-for="path in project.pathes">
-                                <span v-for="pathPart in path">{{ pathPart.node }} : {{ pathPart.outIndex }}</span>
-                            </div>
-                        </ContainerFrame>
+                        <SmallButton @click="editorState.connectingPath = true">添加路径</SmallButton>
+                        <ItemGroup title="点" :datas="project.pathes">
+                            <template #children="{ data: path }">
+                                <template v-for="pathPart in path">
+                                    <NodeSelector :project="project" :editor="editorState"
+                                        v-model:selected="pathPart.node" />
+                                    ▶
+                                    <SelectBar
+                                        :options="project.nodes.find(node => node.id === pathPart.node)?.outPoints.map(point => point.label)"
+                                        v-model:selected="pathPart.outIndex"></SelectBar>
+                                </template>
+                            </template>
+                        </ItemGroup>
                     </ContainerFrame>
                     <ContainerFrame :title="`播放菜单 · ${editorState.playWith ? '运行中' : '空闲'}`"
                         style="margin-bottom: 5px;">
@@ -463,6 +471,8 @@ import LeftRightAlign from "./LeftRightAlign.vue";
 import PreviewPlayer from "./PreviewPlayer.vue";
 import AssetSelector from "./AssetSelector.vue";
 import RectArea from "./RectArea.vue";
+import NodeSelector from "./NodeSelector.vue";
+import ItemGroup from "./ItemGroup.vue";
 onMounted(async () => {
     Drawing.initWith(stage.value as HTMLCanvasElement);
     window.addEventListener("resize", () => {

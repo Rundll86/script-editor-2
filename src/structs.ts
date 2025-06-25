@@ -161,8 +161,8 @@ export class ProjectData extends Configurable {
             "🔥欲望"
         ];
         this.characters = [
-            new Character("Character A", this.feelingsDesciptor),
-            new Character("Character B", this.feelingsDesciptor)
+            new Character("Character A", this.feelingsDescriptor),
+            new Character("Character B", this.feelingsDescriptor)
         ];
         this.nouns = [
             new Noun().self(noun => { noun.refer = "apple"; noun.calls = ["苹果", "智慧果"] }),
@@ -177,15 +177,17 @@ export class ProjectData extends Configurable {
         this.assets = [];
         this.scripts = [];
         this.variables = [];
-        this.pathes = [];
+        this.pathes = [
+            [
+                new PreviewPath(),
+                new PreviewPath()
+            ]
+        ];
         this.saveEditorState = false;
         this.entryNode = null;
     }
-    get feelingsDesciptor() {
-        return this.feelings.reduce((data, _, i) => {
-            data[i] = -1;
-            return data;
-        }, {} as Record<number, -1>);
+    get feelingsDescriptor() {
+        return Object.fromEntries(this.feelings.map((_, index) => [index, -1]));
     }
 }
 export type MessageType = "info" | "warn" | "error";
@@ -211,6 +213,7 @@ export class EditorState extends Configurable {
     responsing: boolean = false;
     playWith: string | null = null;
     connectingPath: boolean = false;
+    cursorFollowingIndex: number = -1; // 鼠标正悬停在<NodeSelector>上的哪个节点
 }
 export class Settings extends Configurable {
     lineType: number = 1; // 0: straight, 1: curved

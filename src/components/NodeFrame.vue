@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, type ComputedRef, type PropType } from "vue";
-import type { Asset, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
+import type { Asset, EditorState, NodeScript, NormalizedNoun, ProjectData } from "@/structs";
 import { nodeTypeNames, nodeTypes, OutPoint, Settings } from "@/structs";
 import DraggableContainer from "./DraggableContainer.vue";
 import SelectBar from "./SelectBar.vue";
@@ -26,6 +26,10 @@ const { data, project } = defineProps({
     },
     settings: {
         type: Object as PropType<Settings>,
+        required: true
+    },
+    editor: {
+        type: Object as PropType<EditorState>,
         required: true
     }
 });
@@ -239,6 +243,24 @@ function handleChildDiff(dx: number = 0, dy: number = 0) {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     transition: transform .2s ease-out, box-shadow .2s ease-out;
     transform: scale(1);
+}
+
+.node.following {
+    animation: starlight 0.5s ease-in-out infinite;
+}
+
+@keyframes starlight {
+    0% {
+        border-color: rgb(180, 180, 180);
+    }
+
+    50% {
+        border-color: red;
+    }
+
+    100% {
+        border-color: rgb(180, 180, 180);
+    }
 }
 
 .node:hover {
