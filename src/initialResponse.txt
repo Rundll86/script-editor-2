@@ -1,0 +1,31 @@
+好的，我会为你生成一个剧本
+<script-json>
+[
+    {
+        "id": "1",
+        "outPoints": [
+            {
+                "nextId": "2",
+                "label": "defaultPoint"
+            }
+        ],
+        "type": "talk",
+        "talker": 0,
+        "message": "我觉得苹果和草莓都很好吃。",
+        "feeling": 0
+    },
+    {
+        "id": "2",
+        "outPoints": [
+            {
+                "nextId": null,
+                "label": "defaultPoint"
+            }
+        ],
+        "type": "talk",
+        "talker": 1,
+        "message": "哈哈，我也喜欢苹果，草莓也不错。",
+        "feeling": 0
+    }
+]
+</script-json>

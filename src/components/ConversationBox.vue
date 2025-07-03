@@ -13,8 +13,6 @@ defineProps({
 const container = ref<HTMLDivElement | null>(null);
 function scroll() {
     if (container.value) {
-        console.log("test");
-
         container.value.scrollTop = container.value.scrollHeight;
     }
 }

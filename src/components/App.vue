@@ -467,6 +467,7 @@ import * as ZipJS from "@zip.js/zip.js";
 import RangeBar from "./RangeBar.vue";
 import ConversationBox from "./ConversationBox.vue";
 import prompt from "../prompt.txt";
+import initialResponse from "../initialResponse.txt";
 import LeftRightAlign from "./LeftRightAlign.vue";
 import PreviewPlayer from "./PreviewPlayer.vue";
 import AssetSelector from "./AssetSelector.vue";
@@ -714,15 +715,25 @@ async function askFairy(e: KeyboardEvent) {
             model: settings.value.customModelName
         });
     }
-    const result = await OpenAIProtocol.streamMessage([{
-        role: "system",
-        content: prompt
-    }, ...editorState.value.conversation], ({ finished, message }) => {
-        if (finished) {
-            editorState.value.responsing = false;
-            return;
-        } else editorState.value.conversation[editorState.value.conversation.length - 1].content += message;
-    });
+    const result = await OpenAIProtocol.streamMessage([
+        {
+            role: "system",
+            content: prompt
+        },
+        {
+            role: "user",
+            content: "两个角色正在对话"
+        },
+        {
+            role: "assistant",
+            content: initialResponse
+        },
+        ...editorState.value.conversation], ({ finished, message }) => {
+            if (finished) {
+                editorState.value.responsing = false;
+                return;
+            } else editorState.value.conversation[editorState.value.conversation.length - 1].content += message;
+        });
     const codes = XML.filter(result, "script-json");
     codes.map((e, i) => {
         const parsed: NodeScript[] = JSON.parse(e);
