@@ -1,6 +1,6 @@
 <template>
-    <div class="root">
-        <img :src="$withBase(`users/${name}.jpg`)" :class="{
+    <div class="root" :title="role">
+        <img :src="$withBase(`users/${name}.${imgExt}`)" :class="{
             avatar: true,
             border: withBorder
         }">
@@ -19,7 +19,12 @@ defineProps({
     alias: String,
     website: String,
     withBorder: Boolean,
-    team: Boolean
+    team: Boolean,
+    imgExt: {
+        type: String,
+        default: "jpg"
+    },
+    role: String
 });
 </script>
 <style scoped>

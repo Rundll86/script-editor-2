@@ -167,14 +167,19 @@
                             </a>
                         </div><br>
                         <span class="thanks">特别鸣谢</span><br>
-                        <MemberFrame name="FallingShrimp" alias="陨落基围虾" website="https://rundll86.github.io" />
-                        <MemberFrame name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" />
+                        人物<br>
+                        <MemberFrame name="陨落基围虾" alias="FallingShrimp" website="https://rundll86.github.io"
+                            role="开发" />
+                        <MemberFrame name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" role="开发" />
+                        <MemberFrame name="Lindor" alias="令德小狗" website="https://files.lindorscosbbs.top" role="提供乐子" />
                         <MemberFrame with-border name="TangDo158" alias="唐豆"
-                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
-                        <MemberFrame name="Tin-Dunwi" alias="冬薇"
-                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" role="美术" />
                         <MemberFrame name="Cyberexplorer" alias="赛博猫猫"
-                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" />
+                            website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" role="美术×开发" /><br>
+                        团队<br>
+                        <MemberFrame name="C-Bone" img-ext="ico" alias="BeastBeat"
+                            website="https://www.patreon.com/BeastBeatGame" role="VN-Script" />
+                        <MemberFrame name="灵阁" alias="ling" website="https://www.patreon.com/BeastBeatGame" role="设计" />
                         <ContainerFrame style="width: fit-content;" title="调试菜单"
                             v-if="settings.showDebugMenu || window.isDevelopment">
                             <SmallButton @click="rebuildNodeConnection">强制重建节点连接</SmallButton>
@@ -612,7 +617,7 @@ async function loadFromVNScript() {
     const whiteIndex = project.value.characters.length;
     const newCharacters: string[] = [];
     project.value.characters.push(new Character(whiteName, feelingsObject()));
-    data.split(/[\r\n]+/g).forEach((line, index) => {
+    data.split(/[\r\n]+/g).forEach(async (line, index) => {
         let node = createNode("talk");
         node.position.x = -editorState.value.workspace.x + index * 300;
         node.position.y = -editorState.value.workspace.y;
@@ -627,6 +632,9 @@ async function loadFromVNScript() {
             if (!newCharacters.includes(character)) {
                 project.value.characters.push(new Character(characterName, feelingsObject()));
                 newCharacters.push(characterName);
+                alert(`请选择${characterName}的【喜悦】头像。`);
+                const asset = new Asset(`喜悦_${characterName}`, "image", await uploadFile("image/*"));
+                project.value.assets.push(asset);
             }
             characterIdx = project.value.characters.map(char => char.name).indexOf(characterName);
             node.talker = characterIdx;
@@ -1019,7 +1027,8 @@ textarea:focus {
 
 .thanks {
     font-size: 18px;
-    margin-top: 10px;
+    margin: 10px;
+    font-weight: bold;
     display: inline-block;
 }
 
