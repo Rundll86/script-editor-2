@@ -170,7 +170,8 @@
                         人物<br>
                         <MemberFrame name="陨落基围虾" alias="FallingShrimp" website="https://rundll86.github.io"
                             role="开发" />
-                        <MemberFrame name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io" role="开发" />
+                        <MemberFrame name="Dr-Shrimp" alias="希利普医生" website="https://rundll86.github.io"
+                            role="其实和←是同一个人😋" />
                         <MemberFrame name="Lindor" alias="令德小狗" website="https://files.lindorscosbbs.top" role="提供乐子" />
                         <MemberFrame with-border name="TangDo158" alias="唐豆"
                             website="https://www.ccw.site/student/6107cafb76415b2f27e0d4d4" role="美术" />
