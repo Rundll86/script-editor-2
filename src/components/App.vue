@@ -199,6 +199,7 @@
                                 <Checkbox v-model="project.saveEditorState" />
                             </template>
                         </LeftRightAlign>
+                        <WideButton superwide @click="loadFromVNScript">从BeastBeat VNScript导入剧本</WideButton><br>
                         <WideButton superwide @click="saveProject">保存</WideButton><br>
                         <WideButton superwide @click="loadProject">加载</WideButton>
                     </ContainerFrame>
@@ -541,6 +542,11 @@ function createNode(type: NodeType) {
     project.value.nodes.push(node);
     return node;
 }
+function connectNode(node1: NodeScript, node2: NodeScript, index: number) {
+    if (!node1 || !node2) return;
+    node1.outPoints[index].nextId = node2.id;
+    nextTick(() => rebuildNodeConnection());
+}
 function deleteSelfMessage(index: number) {
     editorState.value.messages.splice(index, 1);
 }
@@ -597,6 +603,36 @@ async function loadProject() {
             point.outElement = document.querySelector(`[data-node="${node.id}"][data-point="${index}"]`);
             point.inElement = document.querySelector(`[data-node="${point.nextId}"][data-point="in"]`);
         }));
+    });
+}
+async function loadFromVNScript() {
+    const file = await uploadFile("*.txt");
+    const data = new TextDecoder().decode(file);
+    const whiteName = `旁白_${project.value.characters.length}`;
+    const whiteIndex = project.value.characters.length;
+    const newCharacters: string[] = [];
+    project.value.characters.push(new Character(whiteName, feelingsObject()));
+    data.split(/[\r\n]+/g).forEach((line, index) => {
+        let node = createNode("talk");
+        node.position.x = -editorState.value.workspace.x + index * 300;
+        node.position.y = -editorState.value.workspace.y;
+        if (line.startsWith("[") && line.endsWith("]")) {
+            node.talker = whiteIndex;
+            node.message = line.slice(1, -1).trim();
+        } else if (line.includes(": ")) {
+            const [character, message] = line.split(": ");
+            const characterName = character.trim();
+            let characterIdx;
+            const messageText = message.trim();
+            if (!newCharacters.includes(character)) {
+                project.value.characters.push(new Character(characterName, feelingsObject()));
+                newCharacters.push(characterName);
+            }
+            characterIdx = project.value.characters.map(char => char.name).indexOf(characterName);
+            node.talker = characterIdx;
+            node.message = messageText;
+        }
+        connectNode(project.value.nodes[index - 1], node, 0);
     });
 }
 async function compile() {

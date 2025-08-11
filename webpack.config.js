@@ -94,7 +94,7 @@ module.exports = {
     ],
     stats: "errors-warnings",
     devServer: {
-        port: 25565,
+        port: 3000,
         setupExitSignals: false,
         client: {
             logging: "none"
