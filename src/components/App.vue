@@ -454,7 +454,7 @@ import {
     XML,
     NodeState
 } from "@/tools";
-import NavBar from "./NavBar.vue";
+import NavBar from "./NavBars.vue";
 import StaticLayer from "./StaticLayer.vue";
 import NodeFrame from "./NodeFrame.vue";
 import SubWindow from "./SubWindow.vue";
